@@ -62,7 +62,7 @@ function WafHeatmap({ primary = [], secondary = [] }) {
 
 function DurationRow({ duration }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {Object.entries(duration).map(([tier, dur]) => (
         <span key={tier} className={`pillar-badge text-2xs ${TIER_COLOR[tier]}`}>
           {TIER_LABEL[tier]}: <span className="font-mono">{dur}</span>
@@ -456,11 +456,9 @@ export default function Framework() {
                       )}
                     </div>
                     <p className="text-xs text-text-secondary font-mono leading-relaxed">{step.subtitle}</p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <div className="flex-1">
-                        <WafHeatmap primary={step.wafPillars.primary} secondary={step.wafPillars.secondary} />
-                      </div>
-                      <div className="flex gap-3 shrink-0">
+                    <div className="mt-2 space-y-1.5">
+                      <WafHeatmap primary={step.wafPillars.primary} secondary={step.wafPillars.secondary} />
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
                         <span className="text-2xs font-mono text-tier-land">
                           Land <span className="text-text-secondary">{step.duration.land}</span>
                         </span>
@@ -487,7 +485,7 @@ export default function Framework() {
                 <div className="border-t border-border px-5 pb-6 pt-5 space-y-6">
 
                   {/* Duration + metadata row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-2">Duration by Tier</p>
                       <DurationRow duration={step.duration} />
