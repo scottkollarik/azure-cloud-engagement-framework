@@ -79,6 +79,13 @@ const ENTRY_POINTS = [
     tag: 'Design Guide',
   },
   {
+    to: '/caching-design',
+    label: 'Caching Design',
+    description: 'Cache-aside, write-through, stampede prevention, Redis tier selection, and what not to cache — consistency implications designed in Step 03 alongside data architecture.',
+    accent: 'border-waf-performance text-waf-performance',
+    tag: 'Design Guide',
+  },
+  {
     to: '/tradeoffs',
     label: 'Tradeoffs',
     description: 'Competing objectives framed as business conversations — reliability vs cost, security vs performance, and more.',

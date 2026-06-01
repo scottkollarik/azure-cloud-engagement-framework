@@ -17,6 +17,7 @@ const NAV = [
       { to: '/network-design',        label: 'Network Design',     abbr: 'ND' },
       { to: '/identity-design',       label: 'Identity Design',    abbr: 'ID' },
       { to: '/observability-design',  label: 'Observability',      abbr: 'OB' },
+      { to: '/caching-design',        label: 'Caching Design',     abbr: 'CD' },
     ],
   },
   {

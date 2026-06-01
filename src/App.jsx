@@ -19,6 +19,7 @@ import IdentityDesign from './pages/IdentityDesign'
 import NetworkDesign from './pages/NetworkDesign'
 import ObservabilityDesign from './pages/ObservabilityDesign'
 import MicroservicesDesign from './pages/MicroservicesDesign'
+import CachingDesign from './pages/CachingDesign'
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="network-design" element={<NetworkDesign />} />
           <Route path="observability-design" element={<ObservabilityDesign />} />
           <Route path="microservices-design" element={<MicroservicesDesign />} />
+          <Route path="caching-design" element={<CachingDesign />} />
         </Route>
       </Routes>
     </BrowserRouter>
