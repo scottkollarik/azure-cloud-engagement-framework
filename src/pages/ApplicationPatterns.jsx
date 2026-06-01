@@ -1,4 +1,5 @@
 import { useState, Fragment } from 'react'
+import { hl } from '../utils/hl'
 
 const TIER_CLASSES = {
   land:   'border-tier-land text-tier-land',
@@ -226,10 +227,7 @@ export default function ApplicationPatterns() {
         <div className="border border-waf-security/30 bg-surface px-6 py-5 max-w-3xl">
           <p className="text-2xs font-semibold uppercase tracking-widest text-waf-security font-display mb-2">Step 01 Deliverable</p>
           <p className="text-sm font-body text-text-primary leading-relaxed">
-            Pattern selection happens in Step 01, before identity boundary design in Step 02.
-            The pattern determines the security surface area — number of managed identities, NSG
-            rule sets, distributed tracing requirements, and Sentinel alert volume all flow from
-            this decision. Changing the pattern after Step 02 is complete means redesigning the boundary.
+            {hl('Pattern selection happens in Step 01, before identity boundary design in Step 02. The pattern determines the security surface area — number of managed identities, NSG rule sets, distributed tracing requirements, and Sentinel alert volume all flow from this decision. Changing the pattern after Step 02 is complete means redesigning the boundary.')}
           </p>
         </div>
       </div>
@@ -267,9 +265,10 @@ export default function ApplicationPatterns() {
             your <span className="text-text-primary">Bounded Contexts</span> — the correct unit of decomposition.
           </p>
           <p className="text-sm font-body text-text-secondary leading-relaxed mb-4">
-            A Bounded Context maps to a microservice at Scale, a module within a modular monolith at Land,
-            and a subscription boundary at Govern. Drawing Azure boxes before Event Storming produces services
-            aligned to technical layers rather than domain realities.
+            A Bounded Context maps to a microservice at <span className="text-tier-scale font-semibold">Scale</span>,
+            a module within a modular monolith at <span className="text-tier-land font-semibold">Land</span>,
+            and a subscription boundary at <span className="text-tier-govern font-semibold">Govern</span>.
+            Drawing Azure boxes before Event Storming produces services aligned to technical layers rather than domain realities.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border border border-border">
             {[
@@ -301,12 +300,18 @@ export default function ApplicationPatterns() {
                   <span className="font-display text-sm font-semibold text-text-primary shrink-0">{p.label}</span>
                   <span className="text-xs text-text-secondary font-body leading-snug">{p.tagline}</span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {p.tiers.map(t => (
-                    <span key={t} className={`pillar-badge text-2xs ${TIER_CLASSES[t]}`}>{TIER_LABELS[t]}</span>
-                  ))}
-                  <span className={`pillar-badge text-2xs ml-1 ${WAF_CLASSES[p.wafPrimary]}`}>{WAF_LABELS[p.wafPrimary]}</span>
-                  <span className="text-text-secondary font-mono text-xs ml-2">{open === p.id ? '−' : '+'}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex gap-1.5">
+                      {p.tiers.map(t => (
+                        <span key={t} className={`pillar-badge text-2xs ${TIER_CLASSES[t]}`}>{TIER_LABELS[t]}</span>
+                      ))}
+                    </div>
+                    <div>
+                      <span className={`pillar-badge text-2xs ${WAF_CLASSES[p.wafPrimary]}`}>{WAF_LABELS[p.wafPrimary]}</span>
+                    </div>
+                  </div>
+                  <span className="text-text-secondary font-mono text-xs w-3 text-right">{open === p.id ? '−' : '+'}</span>
                 </div>
               </button>
 
@@ -317,9 +322,9 @@ export default function ApplicationPatterns() {
                     {/* Left: summary + when to use + anti-patterns + services */}
                     <div className="px-6 py-5 space-y-5">
                       <div>
-                        <p className="text-sm font-body text-text-secondary leading-relaxed">{p.summary}</p>
+                        <p className="text-sm font-body text-text-secondary leading-relaxed">{hl(p.summary)}</p>
                         {p.editorial && (
-                          <p className="mt-3 text-xs font-body text-text-secondary italic border-l-2 border-accent/40 pl-3 leading-relaxed">{p.editorial}</p>
+                          <p className="mt-3 text-xs font-body text-text-secondary italic border-l-2 border-accent/40 pl-3 leading-relaxed">{hl(p.editorial)}</p>
                         )}
                       </div>
 
@@ -329,7 +334,7 @@ export default function ApplicationPatterns() {
                           {p.whenToUse.map((w, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs font-body text-text-primary leading-snug">
                               <span className="mt-1.5 w-1 h-1 rounded-full bg-waf-reliability shrink-0" />
-                              {w}
+                              {hl(w)}
                             </li>
                           ))}
                         </ul>
@@ -341,7 +346,7 @@ export default function ApplicationPatterns() {
                           {p.antiPatterns.map((a, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs font-body text-text-secondary leading-snug">
                               <span className="mt-1.5 w-1 h-1 rounded-full bg-waf-security shrink-0" />
-                              {a}
+                              {hl(a)}
                             </li>
                           ))}
                         </ul>
@@ -370,7 +375,7 @@ export default function ApplicationPatterns() {
                           {p.step2.map((s, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs font-body text-text-primary leading-snug">
                               <span className="mt-1.5 w-1 h-1 rounded-full bg-waf-security shrink-0" />
-                              {s}
+                              {hl(s)}
                             </li>
                           ))}
                         </ul>
@@ -389,9 +394,7 @@ export default function ApplicationPatterns() {
       <section className="mb-8">
         <SectionHeader label="Messaging" title="Service Bus vs Event Grid vs Event Hubs" />
         <p className="text-sm text-text-secondary font-body leading-relaxed mb-4 max-w-2xl">
-          The three Azure messaging services cover different use cases. Choosing the wrong one is a
-          Step 03 data architecture problem that surfaces as a Step 05 failure mode. Make this decision in Step 01
-          alongside the application pattern.
+          {hl('The three Azure messaging services cover different use cases. Choosing the wrong one is a Step 03 data architecture problem that surfaces as a Step 05 failure mode. Make this decision in Step 01 alongside the application pattern.')}
         </p>
         <div className="border border-border overflow-x-auto">
           <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr] min-w-[640px]">
@@ -423,6 +426,7 @@ export default function ApplicationPatterns() {
     </div>
   )
 }
+
 
 function SectionHeader({ label, title }) {
   return (

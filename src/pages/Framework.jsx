@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import steps from '../data/framework-steps.json'
 import pillars from '../data/waf-pillars.json'
 
@@ -385,7 +386,17 @@ function ChevronIcon({ open }) {
 }
 
 export default function Framework() {
-  const [activeStep, setActiveStep] = useState(null)
+  const [searchParams] = useSearchParams()
+  const [activeStep, setActiveStep] = useState(() => searchParams.get('open') || null)
+
+  useEffect(() => {
+    const openParam = searchParams.get('open')
+    if (!openParam) return
+    setTimeout(() => {
+      const el = document.getElementById(openParam)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }, [])
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-12">
@@ -444,7 +455,7 @@ export default function Framework() {
           const allPillarIds = [...(step.wafPillars.primary || []), ...(step.wafPillars.secondary || [])]
 
           return (
-            <div key={step.id} className={`border transition-colors ${isActive ? 'border-accent/50' : 'border-border hover:border-border/80'} bg-surface`}>
+            <div key={step.id} id={step.id} className={`border transition-colors ${isActive ? 'border-accent/50' : 'border-border hover:border-border/80'} bg-surface`}>
 
               {/* Step header */}
               <button
