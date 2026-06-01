@@ -213,7 +213,9 @@ export default function EngagementTiers() {
           </div>
         </div>
         <p className="mt-2 text-2xs text-text-secondary font-mono">
-          Durations are elapsed calendar time, not engineering hours. Regulatory overlays (FedRAMP High: ×1.6, CMMC: ×1.5) multiply the total.
+          Durations are elapsed calendar time, not engineering hours. Estimates assume a prepared customer, experienced team, and no active migrations in progress —
+          unprepared customer discovery, legacy AD migration, or multi-vendor integration add weeks at every tier.
+          Regulatory overlays (FedRAMP High: ×1.6, CMMC: ×1.5) multiply the total.
           Step 02 is the critical path at Tier 2+ — all downstream IaC depends on its outputs.
         </p>
       </section>

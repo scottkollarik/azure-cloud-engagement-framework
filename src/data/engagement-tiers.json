@@ -27,15 +27,15 @@
       "Microsoft Entra ID"
     ],
     "iacReadiness": "IaC can begin after Step 2. Governance boundary is thin at this tier — management groups and policy are lightweight.",
-    "typicalDuration": "4–8 weeks end-to-end",
+    "typicalDuration": "6–10 weeks",
     "steps": [
-      { "stepId": "step-1", "duration": "2–4 hours",  "notes": "Constraints are typically simpler — single workload, lower regulatory pressure" },
-      { "stepId": "step-2", "duration": "1–2 days",   "notes": "Lightweight governance: single subscription, basic Entra ID, simple hub VNet" },
-      { "stepId": "step-3", "duration": "4–8 hours",  "notes": "One or two data stores; replication may be single-region initially" },
-      { "stepId": "step-4", "duration": "1–2 days",   "notes": "Straightforward compute selection; no ExpressRoute" },
-      { "stepId": "step-5", "duration": "2–4 hours",  "notes": "Fewer failure domains to analyze" },
-      { "stepId": "step-6", "duration": "2–4 hours",  "notes": "Basic right-sizing; no Reserved Instances until 30-day baseline" },
-      { "stepId": "step-7", "duration": "1–2 days",   "notes": "Simple CI/CD pipeline; blue/green via App Service slots" }
+      { "stepId": "step-1", "duration": "2–4 days",  "notes": "Discovery sessions require customer follow-up time — RTO/RPO, compliance status, and data residency are rarely confirmed in a single meeting" },
+      { "stepId": "step-2", "duration": "3–5 days",  "notes": "Conditional Access sign-off, VNet/NSG design, Policy baseline, and Log Analytics setup each require stakeholder alignment cycles" },
+      { "stepId": "step-3", "duration": "2–4 days",  "notes": "Data classification workshop plus customer validation time; documented replication strategy and lifecycle policy take longer than the discovery" },
+      { "stepId": "step-4", "duration": "2–4 days",  "notes": "Compute selection, VNet topology, autoscale configuration — design documentation and review cycles add time even at this tier" },
+      { "stepId": "step-5", "duration": "2–3 days",  "notes": "Proper failure matrix requires enumerating components, running failure scenarios, identifying SPOFs, and documenting remediation — not a half-day exercise" },
+      { "stepId": "step-6", "duration": "2–3 days",  "notes": "Right-sizing needs a 30-day utilization baseline; RI analysis, tagging policy, and budget configuration each take meaningful time" },
+      { "stepId": "step-7", "duration": "3–5 days",  "notes": "IaC repo structure, CI/CD pipeline with proper gates, deployment safety pattern selection, and minimum runbook library — more than two days of work" }
     ]
   },
   {
@@ -69,15 +69,15 @@
       "Azure SQL Auto-Failover Group"
     ],
     "iacReadiness": "Step 2 is the critical path. Management group topology, Policy initiative scope, and network design must be finalized before IaC templates are authored — changing these post-deployment requires resource moves.",
-    "typicalDuration": "8–16 weeks end-to-end",
+    "typicalDuration": "14–24 weeks",
     "steps": [
-      { "stepId": "step-1", "duration": "4–8 hours",  "notes": "Multiple workload SLAs to reconcile; hybrid connectivity adds latency considerations" },
-      { "stepId": "step-2", "duration": "1–2 weeks",  "notes": "Management groups, subscription topology, Policy initiative, Private Endpoints at scale — this is the long pole", "criticalPath": true },
-      { "stepId": "step-3", "duration": "2–4 days",   "notes": "Multiple data stores with different replication requirements; data gravity analysis needed" },
-      { "stepId": "step-4", "duration": "3–5 days",   "notes": "Virtual WAN or hub-spoke decision; ExpressRoute lead time planning (4–8 weeks)" },
-      { "stepId": "step-5", "duration": "1–2 days",   "notes": "More failure domains; on-premises dependency chain" },
-      { "stepId": "step-6", "duration": "1–2 days",   "notes": "Reserved Instance decisions; multi-subscription cost aggregation" },
-      { "stepId": "step-7", "duration": "3–5 days",   "notes": "Multi-team GitOps; environment promotion gates; change management process" }
+      { "stepId": "step-1", "duration": "3–5 days",   "notes": "Multiple workload SLAs to reconcile across teams; plan for 3–4 discovery sessions, not one — stakeholder availability is a consistent constraint" },
+      { "stepId": "step-2", "duration": "2–4 weeks",  "notes": "Management groups, subscription topology, Policy initiatives, Private Endpoints at scale, Sentinel onboarding — expect multiple review cycles and sign-off delays from IAM, network, and security teams", "criticalPath": true },
+      { "stepId": "step-3", "duration": "1–2 weeks",  "notes": "Multiple data stores with different replication requirements; data gravity analysis requires cross-team input and documentation review" },
+      { "stepId": "step-4", "duration": "1–2 weeks",  "notes": "Virtual WAN or hub-spoke decision, multi-team network alignment, ExpressRoute lead time planning (4–8 weeks carrier provisioning starts here)" },
+      { "stepId": "step-5", "duration": "3–5 days",   "notes": "Larger failure domain surface; on-premises dependency chain adds complexity — thorough failure matrix and remediation planning is a full week of work" },
+      { "stepId": "step-6", "duration": "3–5 days",   "notes": "Reserved Instance decisions across multiple subscriptions, multi-team tagging audit, FinOps maturity baseline — Finance stakeholder alignment takes time" },
+      { "stepId": "step-7", "duration": "1–2 weeks",  "notes": "Multi-team GitOps, environment promotion gates, change management process — integration friction across teams is unavoidable" }
     ]
   },
   {
@@ -111,16 +111,16 @@
       "Azure Policy (custom initiatives)",
       "Azure Cost Management (Management Group scope)"
     ],
-    "iacReadiness": "Step 2 is the long pole at this tier — management group hierarchy, Policy initiative stacks, and network topology definition can take 2–4 weeks. No Bicep template should be authored until the governance boundary is signed off. Rushing this creates technical debt that is expensive to remediate.",
-    "typicalDuration": "16–32 weeks end-to-end",
+    "iacReadiness": "Step 2 is the long pole at this tier — management group hierarchy, Policy initiative stacks, and network topology definition can take 4–8 weeks. No Bicep template should be authored until the governance boundary is signed off. Rushing this creates technical debt that is expensive to remediate.",
+    "typicalDuration": "24–48 weeks",
     "steps": [
-      { "stepId": "step-1", "duration": "1–2 days",   "notes": "Multiple regulatory frameworks; complex data residency; competing SLA requirements across BUs" },
-      { "stepId": "step-2", "duration": "2–4 weeks",  "notes": "Full ALZ deployment; custom Policy initiatives; Sentinel onboarding; multi-region network; Private Endpoints everywhere — the dominant workstream", "criticalPath": true },
-      { "stepId": "step-3", "duration": "1–2 weeks",  "notes": "Data sovereignty across regions; zero-RPO requirements; cross-region replication compliance" },
-      { "stepId": "step-4", "duration": "1–2 weeks",  "notes": "Multi-region active-active; ExpressRoute + VPN coexistence; per-region compute strategy" },
-      { "stepId": "step-5", "duration": "2–4 days",   "notes": "Full failure matrix; regulated incident scenarios; POA&M for identified gaps" },
-      { "stepId": "step-6", "duration": "3–5 days",   "notes": "FinOps maturity assessment; chargeback implementation; 3-year RI strategy" },
-      { "stepId": "step-7", "duration": "2–3 weeks",  "notes": "CAB integration; ATO documentation; ConMon program; enterprise runbook library" }
+      { "stepId": "step-1", "duration": "1–2 weeks",  "notes": "Multiple regulatory frameworks require legal and compliance input; data residency constraints across BUs, competing SLA requirements — plan for 4–6 sessions across different stakeholder groups" },
+      { "stepId": "step-2", "duration": "4–8 weeks",  "notes": "Full ALZ deployment, custom Policy initiatives, Sentinel enterprise onboarding, multi-region network design — this is a multi-month workstream. Sign-off involves IAM, network, security, compliance, and legal teams.", "criticalPath": true },
+      { "stepId": "step-3", "duration": "2–4 weeks",  "notes": "Data sovereignty across regions, zero-RPO requirements, cross-region replication compliance — legal and compliance review extends every data architecture decision" },
+      { "stepId": "step-4", "duration": "2–3 weeks",  "notes": "Multi-region active-active or active-passive decision, ExpressRoute + VPN coexistence design, per-region compute strategy — ExpressRoute carrier provisioning (4–8 weeks) starts in parallel" },
+      { "stepId": "step-5", "duration": "1–2 weeks",  "notes": "Full failure matrix for regulated incident scenarios, POA&M for identified gaps, compliance evidence packaging — documentation alone takes days" },
+      { "stepId": "step-6", "duration": "1–2 weeks",  "notes": "FinOps maturity assessment, chargeback implementation, 3-year RI strategy — Finance and procurement stakeholder alignment adds calendar time" },
+      { "stepId": "step-7", "duration": "3–5 weeks",  "notes": "CAB integration, ATO documentation package, ConMon program standup, enterprise runbook library — regulatory documentation alone is weeks of work" }
     ]
   }
 ]

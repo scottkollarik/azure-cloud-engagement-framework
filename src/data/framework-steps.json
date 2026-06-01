@@ -5,7 +5,7 @@
     "title": "Deconstruct Constraints and Targets",
     "subtitle": "Extract the non-negotiable business rules before selecting any Azure service.",
     "wafPillars": { "primary": ["reliability"], "secondary": ["security"] },
-    "duration": { "land": "2–4 hours", "scale": "4–8 hours", "govern": "1–2 days" },
+    "duration": { "land": "2–4 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
       "Number of regulatory frameworks in scope (HIPAA, PCI, GDPR)",
       "Data residency constraints eliminating preferred region pairs",
@@ -105,7 +105,7 @@
     "title": "Establish the Identity, Security, and Observability Boundary",
     "subtitle": "Define who owns what and how access is controlled before designing compute or network.",
     "wafPillars": { "primary": ["security"], "secondary": ["operational-excellence", "reliability"] },
-    "duration": { "land": "1–2 days", "scale": "1–2 weeks", "govern": "2–4 weeks" },
+    "duration": { "land": "3–5 days", "scale": "2–4 weeks", "govern": "4–8 weeks" },
     "complexityDrivers": [
       "Number of management groups and subscription topology depth",
       "Azure Policy initiative scope (built-in vs custom)",
@@ -265,7 +265,7 @@
     "title": "Map the Data Flow and Storage Tiers",
     "subtitle": "Data architecture dictates network and compute design — not the other way around.",
     "wafPillars": { "primary": ["reliability"], "secondary": ["security", "performance-efficiency", "cost-optimization"] },
-    "duration": { "land": "4–8 hours", "scale": "2–4 days", "govern": "1–2 weeks" },
+    "duration": { "land": "2–4 days", "scale": "1–2 weeks", "govern": "2–4 weeks" },
     "complexityDrivers": [
       "Number of distinct data domains and their independence",
       "Mixed data models in the same workload",
@@ -358,7 +358,7 @@
     "title": "Design the Network Routing and Compute Abstraction",
     "subtitle": "Connect users to compute with the right traffic routing and scaling model.",
     "wafPillars": { "primary": ["performance-efficiency"], "secondary": ["security", "reliability", "cost-optimization"] },
-    "duration": { "land": "1–2 days", "scale": "3–5 days", "govern": "1–2 weeks" },
+    "duration": { "land": "2–4 days", "scale": "1–2 weeks", "govern": "2–3 weeks" },
     "complexityDrivers": [
       "Number of distinct entry points (public, private, on-premises)",
       "Stateful vs stateless compute",
@@ -452,7 +452,7 @@
     "title": "Conduct a Blast Radius Failure Analysis",
     "subtitle": "Stress-test the design on paper by simulating total failures of individual components.",
     "wafPillars": { "primary": ["reliability"], "secondary": ["security", "operational-excellence"] },
-    "duration": { "land": "2–4 hours", "scale": "1–2 days", "govern": "2–4 days" },
+    "duration": { "land": "2–3 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
       "Number of distinct failure domains",
       "Complexity of data failover chain",
@@ -531,7 +531,7 @@
     "title": "Apply FinOps Optimizations",
     "subtitle": "Refine the final architecture for cost efficiency without sacrificing reliability or security.",
     "wafPillars": { "primary": ["cost-optimization"], "secondary": ["security", "operational-excellence"] },
-    "duration": { "land": "2–4 hours", "scale": "1–2 days", "govern": "3–5 days" },
+    "duration": { "land": "2–3 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
       "Number of subscriptions requiring cost aggregation",
       "Reserved Instance commitment duration decisions",
@@ -619,7 +619,7 @@
     "title": "Establish the Operational Model",
     "subtitle": "Define how the architecture is deployed, changed, monitored, and recovered — by people, not just tools.",
     "wafPillars": { "primary": ["operational-excellence"], "secondary": ["reliability", "security"] },
-    "duration": { "land": "1–2 days", "scale": "3–5 days", "govern": "2–3 weeks" },
+    "duration": { "land": "3–5 days", "scale": "1–2 weeks", "govern": "3–5 weeks" },
     "complexityDrivers": [
       "Number of teams owning different platform components",
       "Regulatory change management requirements (CAB process)",
