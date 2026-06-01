@@ -16,6 +16,7 @@ const NAV = [
       { to: '/reference-architectures', label: 'Reference Architectures', abbr: 'RA' },
       { to: '/ai-workloads',            label: 'AI Workloads',            abbr: 'AI' },
       { to: '/troubleshooting',         label: 'Troubleshooting',         abbr: 'TS' },
+      { to: '/iac',                     label: 'IaC Reference',           abbr: 'IC' },
     ],
   },
   {

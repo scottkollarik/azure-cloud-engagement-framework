@@ -45,6 +45,13 @@ const ENTRY_POINTS = [
     tag: 'Reference',
   },
   {
+    to: '/iac',
+    label: 'IaC Reference',
+    description: 'Bicep vs Terraform decision matrix, module structure, state management, pipeline patterns, and testing.',
+    accent: 'border-waf-operations text-waf-operations',
+    tag: 'Reference',
+  },
+  {
     to: '/calculator',
     label: 'Cost Calculator',
     description: 'Build an itemized Azure spend estimate from architectural decisions.',

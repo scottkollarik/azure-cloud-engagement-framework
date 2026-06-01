@@ -12,6 +12,7 @@ import AiWorkloads from './pages/AiWorkloads'
 import Adr from './pages/Adr'
 import Timeline from './pages/Timeline'
 import Troubleshooting from './pages/Troubleshooting'
+import IacReference from './pages/IacReference'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="adr" element={<Adr />} />
           <Route path="timeline" element={<Timeline />} />
           <Route path="troubleshooting" element={<Troubleshooting />} />
+          <Route path="iac" element={<IacReference />} />
         </Route>
       </Routes>
     </BrowserRouter>
