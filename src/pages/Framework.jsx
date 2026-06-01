@@ -109,10 +109,17 @@ function SubStepCard({ subStep }) {
           )}
 
           {subStep.serviceMapping && (
-            <DataTable
-              columns={['RPO Target', 'Azure Service', 'Mechanism']}
-              rows={subStep.serviceMapping.map(r => [r.rpo, r.service, r.mechanism])}
-            />
+            subStep.serviceMapping[0]?.rto !== undefined ? (
+              <DataTable
+                columns={['RTO Target', 'Pattern', 'Azure Services']}
+                rows={subStep.serviceMapping.map(r => [r.rto, r.pattern, r.services])}
+              />
+            ) : (
+              <DataTable
+                columns={['RPO Target', 'Azure Service', 'Mechanism']}
+                rows={subStep.serviceMapping.map(r => [r.rpo, r.service, r.mechanism])}
+              />
+            )
           )}
 
           {subStep.comparisonTable && Array.isArray(subStep.comparisonTable) && subStep.comparisonTable[0]?.frontDoor !== undefined && (

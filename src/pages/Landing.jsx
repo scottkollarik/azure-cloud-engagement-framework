@@ -44,6 +44,13 @@ const ENTRY_POINTS = [
     tag: 'Reference',
   },
   {
+    to: '/application-patterns',
+    label: 'Application Patterns',
+    description: 'Modular monolith, microservices, event-driven, CQRS, API gateway — a Step 01 decision that determines the identity and security surface area Step 02 must secure.',
+    accent: 'border-waf-reliability text-waf-reliability',
+    tag: 'Reference',
+  },
+  {
     to: '/tradeoffs',
     label: 'Tradeoffs',
     description: 'Competing objectives framed as business conversations — reliability vs cost, security vs performance, and more.',
