@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0a0e1a;
+    color: #f1f5f9;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    color: #93c5fd;
+  }
+
+  * {
+    border-color: #1e2d40;
+  }
+
+  ::selection {
+    background-color: rgba(37, 99, 235, 0.3);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0e1a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e2d40;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+  }
+}
+
+@layer components {
+  /* Edge glow — Azure blue bleeds from top-left, faint violet from bottom-right */
+  .bg-glow {
+    background-color: #0a0e1a;
+    background-image:
+      radial-gradient(ellipse 900px 700px at -180px -120px, rgba(37, 99, 235, 0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 500px at calc(100% + 150px) calc(100% + 150px), rgba(124, 58, 237, 0.07) 0%, transparent 70%);
+    background-attachment: fixed;
+  }
+
+  /* Hard-edged cards — no soft shadows */
+  .card {
+    background-color: #111827;
+    border: 1px solid #1e2d40;
+    border-radius: 2px;
+  }
+
+  .card-hover {
+    @apply card transition-colors duration-150;
+  }
+  .card-hover:hover {
+    border-color: #2563eb;
+  }
+
+  /* Monospace data values */
+  .data-value {
+    font-family: 'JetBrains Mono', monospace;
+    color: #93c5fd;
+    font-size: 0.8125rem;
+  }
+
+  /* Pillar badge */
+  .pillar-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 2px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+
+  /* Tier badge */
+  .tier-badge {
+    @apply pillar-badge;
+  }
+}

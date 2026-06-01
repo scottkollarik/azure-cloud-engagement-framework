@@ -1,0 +1,707 @@
+[
+  {
+    "id": "step-1",
+    "number": "01",
+    "title": "Deconstruct Constraints and Targets",
+    "subtitle": "Extract the non-negotiable business rules before selecting any Azure service.",
+    "wafPillars": { "primary": ["reliability"], "secondary": ["security"] },
+    "duration": { "land": "2–4 hours", "scale": "4–8 hours", "govern": "1–2 days" },
+    "complexityDrivers": [
+      "Number of regulatory frameworks in scope (HIPAA, PCI, GDPR)",
+      "Data residency constraints eliminating preferred region pairs",
+      "Multiple business units with conflicting SLA requirements"
+    ],
+    "deliverables": [
+      "Quantified RTO and RPO per application tier",
+      "Composite SLA calculation proving design meets availability target",
+      "Approved Azure region pair with data residency justification",
+      "Constraint register (inputs to all downstream steps)"
+    ],
+    "stakeholders": ["Solutions architect", "Business unit lead", "Compliance officer", "CTO / CIO"],
+    "gates": [],
+    "criticalPath": false,
+    "interactiveTools": ["sla-calculator", "rto-rpo-service-matcher"],
+    "subSteps": [
+      {
+        "id": "1a",
+        "title": "Recovery Point Objective (RPO)",
+        "question": "How much data loss is acceptable?",
+        "summary": "RPO is the maximum tolerable age of data that can be lost on failure. It is measured backwards from the failure event and is primarily a business decision driven by a Business Impact Analysis, not a technical constraint.",
+        "keyPoints": [
+          "Financial transaction databases often require near-zero RPO; internal HR records may tolerate 24-hour RPO",
+          "RPO directly determines which Azure replication mechanism is viable",
+          "HIPAA and PCI DSS impose maximum data loss windows — compliance can override business preference",
+          "Higher data change rates require shorter RPO windows due to more data generated per minute"
+        ],
+        "serviceMapping": [
+          { "rpo": "Near-zero (seconds)",   "service": "Azure Cosmos DB",               "mechanism": "Multi-region multi-write" },
+          { "rpo": "< 5 minutes",           "service": "Azure SQL Database",             "mechanism": "Active geo-replication" },
+          { "rpo": "< 30 minutes",          "service": "Azure SQL Auto-Failover Group",  "mechanism": "Asynchronous geo-replication with automatic failover" },
+          { "rpo": "< 4 hours",             "service": "Azure Blob Storage (GRS)",       "mechanism": "Geo-redundant storage" },
+          { "rpo": "< 24 hours",            "service": "Azure Backup",                   "mechanism": "Daily snapshot to Recovery Services Vault" }
+        ]
+      },
+      {
+        "id": "1b",
+        "title": "Recovery Time Objective (RTO)",
+        "question": "How long can the system be completely offline?",
+        "summary": "RTO is the maximum tolerable duration of a service outage. Measured forward from the failure event — if the system fails at 3:00 PM and RTO is 2 hours, it must be operational by 5:00 PM. Set by the business through cost-of-downtime analysis.",
+        "keyPoints": [
+          "The slowest dependency in the recovery chain sets the actual RTO floor — not the fastest component",
+          "Active-active architectures achieve < 1 minute RTO; cold standby may take hours",
+          "SLA penalty clauses create hard RTO floors — missing them triggers financial and legal consequences",
+          "Test RTO under realistic conditions, not just theoretical estimates"
+        ],
+        "serviceMapping": [
+          { "rto": "< 1 minute",   "pattern": "Active-active, pre-warmed",           "services": "Front Door + App Service (multi-region) + Cosmos DB multi-write" },
+          { "rto": "< 15 minutes", "pattern": "Active-passive, automated failover",  "services": "Traffic Manager + App Service + SQL Auto-Failover Group" },
+          { "rto": "< 1 hour",     "pattern": "Active-passive, manual failover",     "services": "DNS update + VM snapshots + Azure Backup restore" },
+          { "rto": "< 4 hours",    "pattern": "Cold standby",                        "services": "Azure Site Recovery" },
+          { "rto": "< 24 hours",   "pattern": "Backup restore",                      "services": "Azure Backup + Recovery Services Vault" }
+        ]
+      },
+      {
+        "id": "1c",
+        "title": "Composite SLA",
+        "question": "Does the design mathematically meet the availability requirement?",
+        "summary": "A Composite SLA is the mathematical product of all component SLAs in a serial dependency chain. It is always lower than the weakest individual component. Understanding the serial vs. parallel formula is essential — stacking two 99.99% components in series produces 99.98%, doubling annual downtime.",
+        "keyPoints": [
+          "Serial formula: SLA₁ × SLA₂ × SLA₃ — availability always decreases",
+          "Parallel (redundant) formula: 1 - ((1 - SLA₁) × (1 - SLA₂)) — availability increases",
+          "99.99% → 99.98% serial degradation doubles annual downtime from 52 min to 1 hr 45 min",
+          "Composite SLA calculation is a gating deliverable — if math cannot meet target, redesign first"
+        ],
+        "slaTable": [
+          { "sla": "99.9%",   "annualDowntime": "8 hr 46 min",  "monthlyDowntime": "43 min" },
+          { "sla": "99.95%",  "annualDowntime": "4 hr 23 min",  "monthlyDowntime": "21 min" },
+          { "sla": "99.99%",  "annualDowntime": "52 min",        "monthlyDowntime": "4.4 min" },
+          { "sla": "99.999%", "annualDowntime": "5 min",         "monthlyDowntime": "26 sec" }
+        ]
+      },
+      {
+        "id": "1d",
+        "title": "Data Residency",
+        "question": "Where must data physically exist?",
+        "summary": "Data residency is a legal mandate, not an optimization. It creates hard geographic boundaries that override architectural preferences and can force disaster recovery into a smaller region footprint than availability math would prefer.",
+        "keyPoints": [
+          "GDPR: EU/EEA personal data cannot replicate to US regions without Standard Contractual Clauses",
+          "FedRAMP High: Azure Government regions only (USGov Virginia ↔ USGov Arizona pair)",
+          "HIPAA: No specific residency mandate but requires signed BAA with Microsoft",
+          "Document the constraint explicitly — it cascades into region pair selection in Steps 3 and 4"
+        ],
+        "residencyTable": [
+          { "framework": "GDPR",            "constraint": "EU/EEA only",                          "azureRegionPair": "Germany West Central ↔ Germany North, or West Europe ↔ North Europe" },
+          { "framework": "FedRAMP High",    "constraint": "Azure Government only",                "azureRegionPair": "USGov Virginia ↔ USGov Arizona" },
+          { "framework": "HIPAA",           "constraint": "BAA required; no residency mandate",   "azureRegionPair": "Any paired commercial regions" },
+          { "framework": "Canadian PIPEDA", "constraint": "Canada preferred for public sector",   "azureRegionPair": "Canada Central ↔ Canada East" },
+          { "framework": "Australian APPs", "constraint": "Australia preferred",                  "azureRegionPair": "Australia East ↔ Australia Southeast" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-2",
+    "number": "02",
+    "title": "Establish the Identity, Security, and Observability Boundary",
+    "subtitle": "Define who owns what and how access is controlled before designing compute or network.",
+    "wafPillars": { "primary": ["security"], "secondary": ["operational-excellence", "reliability"] },
+    "duration": { "land": "1–2 days", "scale": "1–2 weeks", "govern": "2–4 weeks" },
+    "complexityDrivers": [
+      "Number of management groups and subscription topology depth",
+      "Azure Policy initiative scope (built-in vs custom)",
+      "Hybrid identity (on-premises AD sync vs cloud-native)",
+      "Network perimeter model (Service Endpoints vs Private Link at scale)",
+      "Sentinel integration and custom analytic rules"
+    ],
+    "deliverables": [
+      "Management group and subscription topology diagram",
+      "Network perimeter decision: Private Link vs Service Endpoints",
+      "Microsoft Entra ID baseline (Conditional Access policies)",
+      "Azure Policy initiative assignment record",
+      "Central Log Analytics workspace + Sentinel workspace provisioned",
+      "Azure Activity Log routing to central workspace confirmed"
+    ],
+    "stakeholders": ["Solutions architect", "Identity and access management lead", "Network architect", "Security operations (SOC)", "Compliance officer"],
+    "gates": ["iac-design", "step-3", "step-4"],
+    "criticalPath": true,
+    "criticalPathNote": "This step gates IaC design and all downstream technical steps. At Tier 2 and Tier 3, rushing past an incomplete governance boundary produces technical debt that is expensive to remediate — Azure Policy scope changes and management group restructuring after resources are deployed require resource moves.",
+    "interactiveTools": ["waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "2a",
+        "title": "Define the Isolation Layer",
+        "question": "What is the management group and subscription hierarchy?",
+        "summary": "The Azure resource hierarchy is your administrative boundary system. Management Groups contain Subscriptions, which contain Resource Groups, which contain resources. Design this top-down before creating any resources — restructuring after deployment is disruptive.",
+        "keyPoints": [
+          "Each subscription is a blast radius boundary for quota, policy scope, and billing",
+          "Use subscription vending at Tier 2+ to eliminate manual provisioning bottlenecks",
+          "Assign RBAC at management group level using built-in roles before creating custom ones",
+          "Tag every subscription with environment, cost-center, owner, and workload-id at creation"
+        ],
+        "hierarchyPattern": {
+          "root": "Root Management Group",
+          "children": [
+            { "name": "Platform", "children": ["Identity subscription", "Management subscription", "Connectivity subscription"] },
+            { "name": "Landing Zones", "children": ["Corp (internal, private network)", "Online (internet-facing)"] },
+            { "name": "Sandbox", "children": [] },
+            { "name": "Decommissioned", "children": [] }
+          ]
+        }
+      },
+      {
+        "id": "2b",
+        "title": "Design the Network Perimeter",
+        "question": "How does compute access PaaS services?",
+        "summary": "Production PaaS services should never be accessed over public endpoints. Private Endpoints inject PaaS service NICs into your VNet, eliminating public exposure. Service Endpoints are an acceptable middle-ground for lower-risk dev scenarios.",
+        "keyPoints": [
+          "Private Link is the product; a Private Endpoint is the deployed resource instance",
+          "Private Endpoints require Private DNS Zone A records — budget for this at scale",
+          "20-service architecture may require 40+ private endpoint resources",
+          "Azure Policy can enforce 'deny public endpoint' on all PaaS services automatically"
+        ],
+        "comparisonTable": [
+          { "mechanism": "Public endpoint",      "routing": "Internet",                "whenToUse": "Dev/test only — never production" },
+          { "mechanism": "Service Endpoints",    "routing": "Azure backbone (VNet-restricted)", "whenToUse": "Lower-risk scenarios; acceptable when exfiltration risk is low" },
+          { "mechanism": "Private Link / Private Endpoint", "routing": "Private NIC in VNet", "whenToUse": "All production; mandatory for regulated workloads" }
+        ]
+      },
+      {
+        "id": "2c",
+        "title": "Enforce Zero-Trust",
+        "question": "Are access decisions verified continuously, regardless of network location?",
+        "summary": "Zero-Trust assumes breach. Every access request — whether from inside or outside the corporate network — must be explicitly verified. Microsoft Entra ID Conditional Access is the primary enforcement mechanism in Azure.",
+        "keyPoints": [
+          "Verify explicitly: evaluate every access request against identity, device, location, and risk signals",
+          "Least privilege: time-bound access via PIM instead of standing Owner/Contributor assignments",
+          "Assume breach: design systems to limit blast radius when credentials are compromised",
+          "Start Conditional Access policies in report-only mode — validate before enforcement"
+        ],
+        "conditionalAccessPolicies": [
+          { "policy": "Require MFA for all users",       "condition": "All cloud apps",          "control": "Require MFA" },
+          { "policy": "Block legacy authentication",     "condition": "IMAP/POP/SMTP auth",      "control": "Block" },
+          { "policy": "Require compliant device",        "condition": "Azure Portal, Key Vault", "control": "Require Intune compliant or Hybrid Entra joined" },
+          { "policy": "Risk-based sign-in",              "condition": "Sign-in risk: Medium+",   "control": "Require MFA or Block" },
+          { "policy": "Privileged role protection",      "condition": "Directory roles",         "control": "Require PIM activation + MFA" }
+        ]
+      },
+      {
+        "id": "2d",
+        "title": "Azure Policy Guardrails",
+        "question": "What configuration standards are automatically enforced?",
+        "summary": "Azure Policy prevents non-compliant resources from being created rather than remediating them after the fact. Start with built-in initiatives; add custom policies for organization-specific requirements.",
+        "keyPoints": [
+          "DeployIfNotExists effect automatically remediates non-compliant existing resources",
+          "Deny effect blocks resource creation — use carefully, as it blocks portal deployment too",
+          "Assign at management group level to cover all child subscriptions automatically",
+          "Microsoft Cloud Security Benchmark (formerly Azure Security Benchmark) is the baseline initiative"
+        ],
+        "builtInInitiatives": [
+          { "name": "Microsoft Cloud Security Benchmark", "purpose": "Comprehensive security baseline — 200+ controls" },
+          { "name": "NIST SP 800-53 Rev 5",              "purpose": "US federal and highly regulated workloads" },
+          { "name": "HIPAA HITRUST 9.2",                 "purpose": "Healthcare PHI environments" },
+          { "name": "PCI DSS v4",                        "purpose": "Payment card data environments" },
+          { "name": "FedRAMP High",                      "purpose": "US federal high-impact systems" },
+          { "name": "ISO 27001:2013",                    "purpose": "International security baseline" }
+        ]
+      },
+      {
+        "id": "2e",
+        "title": "Microsoft Sentinel Integration",
+        "question": "How are raw logs converted into actionable threat intelligence?",
+        "summary": "Microsoft Sentinel is the SIEM/SOAR layer above Log Analytics. It correlates signals across all data sources — Entra ID, Azure activity, network, endpoints — into unified threat detection and automated response.",
+        "keyPoints": [
+          "Sentinel workspace and Log Analytics workspace are separate resources — Sentinel is layered on top of LAW",
+          "Data connectors determine what flows into Sentinel — enable Microsoft connectors first",
+          "Analytics rules detect threats; automation rules trigger SOAR responses",
+          "Sentinel pricing is per-GB analyzed — use commitment tiers above 100 GB/day"
+        ],
+        "criticalConnectors": [
+          "Microsoft Entra ID (sign-in logs, audit logs, provisioning logs)",
+          "Azure Activity (subscription-level control plane)",
+          "Microsoft Defender for Cloud (security alerts)",
+          "Azure Firewall (if deployed in hub)",
+          "Microsoft 365 Defender (if M365 in scope)"
+        ]
+      },
+      {
+        "id": "2f",
+        "title": "Control Plane Auditing",
+        "question": "Who changed what Azure infrastructure, and when?",
+        "summary": "Azure Activity Logs capture every resource creation, modification, deletion, RBAC change, and policy update at the subscription level. Route these to the central Log Analytics workspace via a Management Group-level Diagnostic Setting.",
+        "keyPoints": [
+          "A single Diagnostic Setting at Management Group level covers all child subscriptions",
+          "Retention: 90 days hot in Log Analytics; 1+ year cold in Azure Storage for compliance",
+          "Activity Logs are free — the cost is only Log Analytics ingestion",
+          "Key Vault access logs are critical — every secret read is a potential security event"
+        ]
+      },
+      {
+        "id": "2g",
+        "title": "Establish Observability",
+        "question": "Can you see what is happening across all layers in real time?",
+        "summary": "Observability is not a monitoring nicety — it is a security requirement. Zero-Trust requires continuous validation. You cannot detect anomalous credential use without sign-in log streaming, and you cannot detect data exfiltration without NSG Flow Logs.",
+        "keyPoints": [
+          "Zero-Trust without observability is unenforced policy — you cannot validate what you cannot see",
+          "NSG Flow Logs + Traffic Analytics detect exfiltration over authorized ports to unauthorized destinations",
+          "Place central Log Analytics workspace in a dedicated management subscription with resource locks",
+          "Immutable audit trails are a regulatory requirement for PCI DSS, HIPAA, and FedRAMP"
+        ],
+        "observabilityStack": [
+          { "layer": "Infrastructure",         "service": "Azure Monitor (platform metrics)",    "captures": "CPU, memory, disk, network — all resources" },
+          { "layer": "Application",            "service": "Application Insights",               "captures": "Request traces, dependencies, exceptions, latency" },
+          { "layer": "Distributed tracing",    "service": "Application Insights + OpenTelemetry", "captures": "Cross-service correlation IDs, end-to-end request traces across microservices, AKS pods, and external dependencies. W3C TraceContext (traceparent header) must be propagated by all services — missing it silently breaks the trace graph." },
+          { "layer": "Security",               "service": "Microsoft Sentinel",                 "captures": "Correlated threat signals across all layers" },
+          { "layer": "Network",                "service": "NSG Flow Logs + Traffic Analytics",  "captures": "East-west and north-south traffic patterns" },
+          { "layer": "Identity",               "service": "Entra ID sign-in + audit logs",      "captures": "Authentication events, privilege changes" },
+          { "layer": "Control plane",          "service": "Azure Activity Log",                 "captures": "Who changed what infrastructure, when" },
+          { "layer": "Data plane",             "service": "Azure Diagnostic Logs",              "captures": "Service-specific events (SQL queries, Key Vault ops)" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-3",
+    "number": "03",
+    "title": "Map the Data Flow and Storage Tiers",
+    "subtitle": "Data architecture dictates network and compute design — not the other way around.",
+    "wafPillars": { "primary": ["reliability"], "secondary": ["security", "performance-efficiency", "cost-optimization"] },
+    "duration": { "land": "4–8 hours", "scale": "2–4 days", "govern": "1–2 weeks" },
+    "complexityDrivers": [
+      "Number of distinct data domains and their independence",
+      "Mixed data models in the same workload",
+      "Cross-region replication requirements from Step 1 residency constraints",
+      "Legacy data migration from on-premises"
+    ],
+    "deliverables": [
+      "Data classification matrix",
+      "Replication strategy per data store mapped to RPO targets",
+      "Split-brain prevention mechanism documented",
+      "Storage tier lifecycle policy designed",
+      "Data flow diagram (sources → processing → storage → consumers)"
+    ],
+    "stakeholders": ["Solutions architect", "Data engineer / DBA", "Security architect"],
+    "gates": ["step-4"],
+    "criticalPath": false,
+    "interactiveTools": ["replication-decision-tree", "waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "3a",
+        "title": "Classify Data Structure",
+        "question": "What is the shape of the data?",
+        "summary": "Data classification drives service selection. Choosing a service before classifying data results in architectural mismatches — relational patterns in a document store, or document patterns in a relational store.",
+        "dataModels": [
+          { "model": "Relational",      "characteristics": "Fixed schema, ACID, complex joins",      "azureServices": ["Azure SQL Database", "Azure SQL Managed Instance", "Azure Database for PostgreSQL"] },
+          { "model": "Document",        "characteristics": "Variable schema, hierarchical, JSON",    "azureServices": ["Azure Cosmos DB (NoSQL API)"] },
+          { "model": "Key-value",       "characteristics": "Ultra-low latency, simple lookups",      "azureServices": ["Azure Cache for Redis", "Cosmos DB (Table API)"] },
+          { "model": "Time-series",     "characteristics": "Append-heavy, sensor/telemetry",         "azureServices": ["Azure Data Explorer (ADX)", "Azure Cosmos DB"] },
+          { "model": "Graph",           "characteristics": "Relationship traversal",                 "azureServices": ["Azure Cosmos DB (Gremlin API)"] },
+          { "model": "Blob / Files",    "characteristics": "Unstructured, large objects",            "azureServices": ["Azure Blob Storage", "Azure Data Lake Storage Gen2"] },
+          { "model": "Queue / Stream",  "characteristics": "Ordered messages, pub/sub",              "azureServices": ["Azure Service Bus", "Azure Event Hubs"] }
+        ]
+      },
+      {
+        "id": "3b",
+        "title": "Choose Replication Depth",
+        "question": "What replication mechanism satisfies the RPO from Step 1?",
+        "summary": "Replication strategy must flow from the RPO and data residency constraints established in Step 1. Selecting replication independently introduces risk of mismatch.",
+        "replicationOptions": [
+          { "rpo": "Near-zero",    "service": "Azure Cosmos DB",              "mode": "Multi-region writes (synchronous)",              "autoFailover": true },
+          { "rpo": "< 5 min",     "service": "Azure SQL Database",           "mode": "Active geo-replication (asynchronous)",          "autoFailover": false },
+          { "rpo": "< 30 min",    "service": "Azure SQL Auto-Failover Group","mode": "Asynchronous replication + DNS alias failover",  "autoFailover": true },
+          { "rpo": "< 4 hours",   "service": "Azure Blob Storage (GRS)",     "mode": "Geo-redundant storage",                         "autoFailover": false },
+          { "rpo": "< 24 hours",  "service": "Azure Backup",                 "mode": "Daily snapshot to Recovery Services Vault",     "autoFailover": false }
+        ]
+      },
+      {
+        "id": "3c",
+        "title": "Handle Split-Brain Scenarios",
+        "question": "What prevents both primary and replica from becoming write master simultaneously?",
+        "summary": "Split-brain occurs when both instances promote themselves to primary during a network partition, causing divergent writes that are expensive or impossible to reconcile.",
+        "keyPoints": [
+          "SQL Auto-Failover Groups use quorum-based failover — set GracePeriodWithDataLossHours explicitly",
+          "Cosmos DB multi-write uses Last-Write-Wins (LWW) or custom conflict resolution functions",
+          "Redis geo-replication is active-passive only — active-active requires application-level logic",
+          "Design rule: there must always be exactly one write master for relational data during failover"
+        ]
+      },
+      {
+        "id": "3d",
+        "title": "Storage Tier Selection",
+        "question": "Which access tier matches each dataset's usage pattern?",
+        "summary": "Blob storage cost is driven by tier selection. Over-provisioning cold data in Hot tier is the most common source of preventable Azure storage cost.",
+        "storageTiers": [
+          { "tier": "Premium",  "latency": "< 1ms",       "useCase": "High-frequency I/O, databases",          "costProfile": "Highest" },
+          { "tier": "Hot",      "latency": "Milliseconds", "useCase": "Frequently accessed operational data",   "costProfile": "High storage, low access cost" },
+          { "tier": "Cool",     "latency": "Milliseconds", "useCase": "Infrequently accessed (30+ days)",      "costProfile": "Lower storage, higher access cost" },
+          { "tier": "Cold",     "latency": "Milliseconds", "useCase": "Rarely accessed (90+ days)",            "costProfile": "Low storage, higher access cost" },
+          { "tier": "Archive",  "latency": "Hours (rehydration)", "useCase": "Compliance retention, rarely read", "costProfile": "Lowest storage, high retrieval cost" }
+        ]
+      },
+      {
+        "id": "3e",
+        "title": "Data Gravity and Movement Costs",
+        "question": "Where should compute live relative to its data?",
+        "summary": "Data gravity is the tendency for compute to cluster around large data stores. Moving large datasets is expensive and may be restricted by data residency rules. Place compute in the same region as its primary data store.",
+        "egressCosts": [
+          { "transferType": "Intra-region (same AZ)",         "approxCost": "Free" },
+          { "transferType": "Inter-zone (same region)",       "approxCost": "~$0.01/GB" },
+          { "transferType": "Inter-region (same geography)",  "approxCost": "~$0.02/GB" },
+          { "transferType": "Cross-geography (e.g. US → EU)", "approxCost": "~$0.05–0.08/GB" },
+          { "transferType": "Internet egress",                "approxCost": "~$0.087/GB (first 10 TB/month)" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-4",
+    "number": "04",
+    "title": "Design the Network Routing and Compute Abstraction",
+    "subtitle": "Connect users to compute with the right traffic routing and scaling model.",
+    "wafPillars": { "primary": ["performance-efficiency"], "secondary": ["security", "reliability", "cost-optimization"] },
+    "duration": { "land": "1–2 days", "scale": "3–5 days", "govern": "1–2 weeks" },
+    "complexityDrivers": [
+      "Number of distinct entry points (public, private, on-premises)",
+      "Stateful vs stateless compute",
+      "Multi-region active-active",
+      "ExpressRoute provisioning lead time: 4–8 weeks"
+    ],
+    "deliverables": [
+      "Global routing decision (Front Door vs Traffic Manager) with justification",
+      "Compute platform selection per workload tier with scaling policy",
+      "Network topology diagram",
+      "Autoscaling configuration targets",
+      "Caching strategy per data access pattern",
+      "ExpressRoute or VPN Gateway circuit design (if hybrid)"
+    ],
+    "stakeholders": ["Solutions architect", "Network architect", "Platform engineering lead"],
+    "gates": ["step-5"],
+    "criticalPath": false,
+    "interactiveTools": ["network-topology-selector", "waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "4a",
+        "title": "Select the Global Router",
+        "question": "Where does traffic enter the Azure network and how is it distributed?",
+        "summary": "The global routing layer determines where TLS terminates, where WAF rules are enforced, and how failover between regions is orchestrated. This decision must be made before network topology is finalized.",
+        "comparisonTable": [
+          { "dimension": "OSI layer",           "frontDoor": "Layer 7 (HTTP/HTTPS)",    "trafficManager": "Layer 4 (DNS-based)" },
+          { "dimension": "TLS offloading",      "frontDoor": "Yes — terminates at edge PoP", "trafficManager": "No — TLS handled by origin" },
+          { "dimension": "WAF",                 "frontDoor": "Built-in Azure WAF policy", "trafficManager": "Not available" },
+          { "dimension": "Caching / CDN",       "frontDoor": "Built-in edge caching",   "trafficManager": "Not available" },
+          { "dimension": "Failover speed",      "frontDoor": "Seconds (real-time health probe)", "trafficManager": "Minutes (DNS TTL dependent)" },
+          { "dimension": "Use when",            "frontDoor": "HTTP/HTTPS workloads, WAF required", "trafficManager": "Non-HTTP, DNS routing, third-party origins" }
+        ]
+      },
+      {
+        "id": "4b",
+        "title": "Choose Compute Platform",
+        "question": "Which compute abstraction matches the workload's state, scale, and operational model?",
+        "summary": "Compute selection is driven by three axes: state (stateless vs stateful), scale pattern (event-driven vs sustained), and operational overhead tolerance.",
+        "computeOptions": [
+          { "platform": "Azure App Service",        "state": "Stateless",          "scale": "Rule-based autoscale",         "overhead": "Low",         "whenToUse": "Web apps, APIs; standard PaaS; Tier 1–2" },
+          { "platform": "Azure Container Apps",     "state": "Stateless",          "scale": "KEDA event-driven",            "overhead": "Low-medium",  "whenToUse": "Microservices, background workers, event-driven" },
+          { "platform": "AKS",                      "state": "Stateless+Stateful", "scale": "HPA + KEDA + Cluster Autoscaler", "overhead": "High",     "whenToUse": "Complex microservices, platform engineering layer, Tier 2–3" },
+          { "platform": "Azure Functions",          "state": "Stateless",          "scale": "Consumption (serverless)",     "overhead": "Very low",    "whenToUse": "Event-triggered, short-lived tasks" },
+          { "platform": "Azure Virtual Machines",   "state": "Stateful",           "scale": "VMSS",                         "overhead": "Very high",   "whenToUse": "Lift-and-shift, licensed software, OS-level control" }
+        ]
+      },
+      {
+        "id": "4c",
+        "title": "Autoscaling Design",
+        "question": "How does the system respond to changes in demand without manual intervention?",
+        "summary": "Autoscaling prevents both over-provisioning (cost) and under-provisioning (performance degradation). Design scaling policy before deployment — retrofitting autoscale to a running system is error-prone.",
+        "keyPoints": [
+          "Target 60–70% average CPU utilization with headroom for burst — not 10–20%",
+          "Set scale-in cooldown to 2× the longest request duration to prevent premature scale-in",
+          "AKS: Cluster Autoscaler (node level) + HPA (pod level) + KEDA (event-driven) work together",
+          "Use Pod Disruption Budgets to prevent scale-in from removing too many replicas simultaneously"
+        ]
+      },
+      {
+        "id": "4d",
+        "title": "Caching Strategy",
+        "question": "What data can be served from cache instead of the primary store?",
+        "summary": "Caching reduces database load, decreases latency, and lowers egress costs. Each layer targets a different access pattern. The cache-aside pattern is the most common enterprise implementation.",
+        "cachingLayers": [
+          { "layer": "CDN / edge",         "service": "Azure Front Door built-in",     "whatToCache": "Static assets, public API responses",          "ttl": "Hours to days" },
+          { "layer": "Session / distributed", "service": "Azure Cache for Redis",      "whatToCache": "Session state, auth tokens, computed aggregates", "ttl": "Minutes to hours" },
+          { "layer": "Database query",     "service": "Azure Cache for Redis (cache-aside)", "whatToCache": "Expensive query results, reference data", "ttl": "Minutes" },
+          { "layer": "In-memory",          "service": "Application-level MemoryCache", "whatToCache": "Per-instance hot data, config",               "ttl": "Seconds to minutes" }
+        ]
+      },
+      {
+        "id": "4e",
+        "title": "Hybrid Connectivity",
+        "question": "ExpressRoute or VPN Gateway — or both?",
+        "summary": "For workloads requiring on-premises integration, the connectivity model must be selected in Step 4 because ExpressRoute has a 4–8 week carrier provisioning lead time. Starting this decision late blocks the entire network topology.",
+        "comparisonTable": [
+          { "dimension": "Connectivity",        "vpnGateway": "IPSec over public internet",  "expressRoute": "Private MPLS circuit via carrier" },
+          { "dimension": "Max bandwidth",       "vpnGateway": "Up to 10 Gbps (VpnGw5)",     "expressRoute": "Up to 100 Gbps" },
+          { "dimension": "Latency",             "vpnGateway": "Variable (internet path)",    "expressRoute": "Consistent, low-latency" },
+          { "dimension": "SLA",                 "vpnGateway": "99.9% (ZR: 99.99%)",          "expressRoute": "99.95%" },
+          { "dimension": "Encryption",          "vpnGateway": "Built-in IPSec",              "expressRoute": "Not encrypted by default — add MACsec" },
+          { "dimension": "Provisioning time",   "vpnGateway": "Hours",                       "expressRoute": "4–8 weeks (carrier provisioning)" },
+          { "dimension": "Use when",            "vpnGateway": "Tier 1–2, < 1 Gbps, latency tolerant", "expressRoute": "Tier 2–3, > 1 Gbps, latency sensitive, regulated" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-5",
+    "number": "05",
+    "title": "Conduct a Blast Radius Failure Analysis",
+    "subtitle": "Stress-test the design on paper by simulating total failures of individual components.",
+    "wafPillars": { "primary": ["reliability"], "secondary": ["security", "operational-excellence"] },
+    "duration": { "land": "2–4 hours", "scale": "1–2 days", "govern": "2–4 days" },
+    "complexityDrivers": [
+      "Number of distinct failure domains",
+      "Complexity of data failover chain",
+      "On-premises dependency on ExpressRoute"
+    ],
+    "deliverables": [
+      "Failure scenario matrix with expected behavior per component",
+      "RTO/RPO compliance confirmation per scenario",
+      "Single points of failure (SPOFs) identified and remediation plan",
+      "Chaos engineering test plan"
+    ],
+    "stakeholders": ["Solutions architect", "Site reliability engineer (SRE)", "Security operations"],
+    "gates": [],
+    "criticalPath": false,
+    "interactiveTools": ["blast-radius-simulator", "waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "5a",
+        "title": "Simulate Region Loss",
+        "question": "If Region A vanishes at 2 AM with no warning, what happens to each component?",
+        "summary": "For each component, document: what fails, whether recovery is automatic, what manual action is required, and the RTO contribution. Identify every Single Point of Failure (SPOF).",
+        "failureMatrix": [
+          { "component": "Azure Front Door",              "whatFails": "Origin health probe fails",          "autoRecovery": true,  "rtoContribution": "< 2 min",           "manualAction": "None" },
+          { "component": "SQL Auto-Failover Group",       "whatFails": "Primary promotes replica",           "autoRecovery": true,  "rtoContribution": "~30 sec + grace period", "manualAction": "Verify app connection pool" },
+          { "component": "Cosmos DB (multi-write)",       "whatFails": "Writes continue to surviving regions", "autoRecovery": true, "rtoContribution": "< 1 min",          "manualAction": "Monitor conflict resolution" },
+          { "component": "AKS cluster",                   "whatFails": "Pods on failed region lost",         "autoRecovery": false, "rtoContribution": "Per RTO target",    "manualAction": "Activate DR cluster, re-point DNS" },
+          { "component": "Azure Cache for Redis (Standard)", "whatFails": "Cache lost",                    "autoRecovery": false, "rtoContribution": "Cold-start degradation", "manualAction": "App falls through to database" },
+          { "component": "Private DNS Zones",             "whatFails": "Nothing — zone-global",             "autoRecovery": true,  "rtoContribution": "None",              "manualAction": "None" }
+        ],
+        "spofPatterns": [
+          "Any single database without geo-replication",
+          "A session store (Redis) without geo-replication where loss logs users out",
+          "A single VPN Gateway with no ExpressRoute failover",
+          "An AKS cluster with Availability Zone spread disabled",
+          "A Key Vault without soft-delete and purge protection enabled"
+        ]
+      },
+      {
+        "id": "5b",
+        "title": "Simulate Transient Network Drops",
+        "question": "The ExpressRoute circuit drops for 15 minutes. What breaks, what holds?",
+        "summary": "Transient network partitions are the most common real failure mode. BGP failover to VPN Gateway should be automatic — verify it is configured and tested.",
+        "keyChecks": [
+          { "question": "Does VPN Gateway automatically take over?",     "goodAnswer": "Yes — BGP failover within ~2 min",     "badAnswer": "No — requires manual route table change" },
+          { "question": "Do applications retry on transient failures?",  "goodAnswer": "Yes — exponential backoff with jitter", "badAnswer": "No — requests fail immediately" },
+          { "question": "Does on-premises AD sync continue?",           "goodAnswer": "No — but Entra ID caches for 1–4 hours", "badAnswer": "Fails immediately (no credential cache)" },
+          { "question": "Do health probes alert before user impact?",   "goodAnswer": "Yes — alerting precedes user complaints", "badAnswer": "No — first notice is user complaints" }
+        ],
+        "retryPattern": {
+          "maxRetries": 3,
+          "initialDelay": "500ms",
+          "backoffFactor": "2×",
+          "maxDelay": "30 seconds",
+          "jitter": "±25% of calculated delay",
+          "circuitBreaker": "Open after 5 consecutive failures; half-open probe after 60 seconds"
+        }
+      },
+      {
+        "id": "5c",
+        "title": "Simulate Service-Level Degradation",
+        "question": "The database is up but responding 10× slower than normal. Is the system designed to degrade gracefully?",
+        "summary": "Partial failures are harder to detect than total outages and more common. Graceful degradation means the system returns a reduced-capability response rather than an error.",
+        "detectionMechanisms": [
+          { "signal": "Latency threshold exceeded",    "tooling": "Application Insights availability test + alert rule" },
+          { "signal": "Database lock contention",      "tooling": "Azure SQL Intelligent Insights + Query Performance Insight" },
+          { "signal": "Connection pool exhaustion",    "tooling": "App Insights dependency failure rate metric" },
+          { "signal": "Cache miss rate spike",         "tooling": "Redis metrics in Azure Monitor" },
+          { "signal": "Downstream service errors",     "tooling": "Application Insights dependency map" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-6",
+    "number": "06",
+    "title": "Apply FinOps Optimizations",
+    "subtitle": "Refine the final architecture for cost efficiency without sacrificing reliability or security.",
+    "wafPillars": { "primary": ["cost-optimization"], "secondary": ["security", "operational-excellence"] },
+    "duration": { "land": "2–4 hours", "scale": "1–2 days", "govern": "3–5 days" },
+    "complexityDrivers": [
+      "Number of subscriptions requiring cost aggregation",
+      "Reserved Instance commitment duration decisions",
+      "FinOps maturity of the organization"
+    ],
+    "deliverables": [
+      "Right-sizing recommendation per compute resource",
+      "Reserved Instance / Savings Plan commitment recommendation",
+      "Storage lifecycle policy applied to all blob containers",
+      "Azure Cost Management budget + alert configuration",
+      "Cost allocation tag taxonomy enforced via Policy",
+      "FinOps maturity assessment"
+    ],
+    "stakeholders": ["Solutions architect", "Finance / FinOps lead", "Platform engineering", "Business unit lead"],
+    "gates": [],
+    "criticalPath": false,
+    "interactiveTools": ["cost-composition-builder", "waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "6a",
+        "title": "Right-Size Compute Resources",
+        "question": "Are resources sized for actual utilization, not theoretical peak?",
+        "summary": "Over-provisioning is the most common Azure cost waste. Collect 30 days of utilization data before making sizing decisions. Target 60–70% average CPU, not 10–20%.",
+        "commitmentTypes": [
+          { "type": "Pay-as-you-go",          "discount": "0%",       "flexibility": "Maximum",  "bestFor": "Dev/test, highly variable load" },
+          { "type": "Azure Savings Plan (1-yr)", "discount": "Up to 11%", "flexibility": "High",  "bestFor": "Predictable but flexible workloads" },
+          { "type": "Azure Savings Plan (3-yr)", "discount": "Up to 17%", "flexibility": "High",  "bestFor": "Long-term stable workloads" },
+          { "type": "Reserved Instance (1-yr)", "discount": "Up to 40%", "flexibility": "Medium", "bestFor": "Known steady-state compute" },
+          { "type": "Reserved Instance (3-yr)", "discount": "Up to 63%", "flexibility": "Low",    "bestFor": "Very stable, committed workloads" },
+          { "type": "Spot Instances",           "discount": "Up to 90%", "flexibility": "Low (evictable)", "bestFor": "Batch, CI/CD, fault-tolerant jobs" }
+        ]
+      },
+      {
+        "id": "6b",
+        "title": "Storage Lifecycle Management",
+        "question": "Is data automatically transitioned to cheaper tiers as it ages?",
+        "summary": "Application logs, diagnostic data, and backup exports accumulate silently in Hot tier. A lifecycle policy that moves data to Cool at 30 days and Archive at 90 days can reduce storage costs by 80–95% for inactive data.",
+        "keyPoints": [
+          "1 TB at Hot tier: ~$20/month. Same at Archive tier: ~$1/month — 95% reduction with a Lifecycle policy",
+          "Apply lifecycle policies to all storage accounts at deployment time, not retrospectively",
+          "Archive rehydration takes hours — document which data may need emergency retrieval"
+        ]
+      },
+      {
+        "id": "6c",
+        "title": "Cost Allocation and Tagging",
+        "question": "Can every dollar of Azure spend be attributed to the right team and workload?",
+        "summary": "Cost Management analysis is only actionable if costs can be attributed. Tagging is the mechanism — enforce via Azure Policy DeployIfNotExists at resource group creation.",
+        "requiredTags": [
+          { "key": "environment",  "example": "prod, staging, dev",    "purpose": "Separate production costs from non-production" },
+          { "key": "workload",     "example": "payment-api",            "purpose": "Cost by application" },
+          { "key": "cost-center",  "example": "CC-4421",                "purpose": "Finance chargeback" },
+          { "key": "owner",        "example": "platform-team",          "purpose": "Accountability routing" },
+          { "key": "tier",         "example": "land, scale, govern",    "purpose": "Engagement tier tracking" }
+        ]
+      },
+      {
+        "id": "6d",
+        "title": "Azure Cost Management Budgets",
+        "question": "Are there automated alerts before overspend occurs?",
+        "summary": "Budgets set the control threshold; alerts notify the right people before costs become a crisis. Configure before the workload goes live.",
+        "budgetPattern": {
+          "scope": "Subscription (or Management Group for multi-sub)",
+          "amount": "110% of architectural estimate",
+          "thresholds": ["80% → email workload owner", "100% → email workload owner + platform team", "110% → email cost-center owner + management"],
+          "resetPeriod": "Monthly"
+        }
+      },
+      {
+        "id": "6e",
+        "title": "FinOps Maturity Assessment",
+        "question": "What level of cost management discipline does this organization currently operate at?",
+        "summary": "The FinOps Foundation defines three maturity levels. Prescribing Run-level tooling to a Crawl organization creates overhead without delivering the cultural change needed for FinOps adoption.",
+        "maturityLevels": [
+          { "level": "Crawl", "characteristics": "Ad-hoc reviews, no tagging, no budgets",              "azureTooling": "Cost Management + tagging enforcement + Advisor" },
+          { "level": "Walk",  "characteristics": "Monthly reviews, budgets per team, some RI purchases", "azureTooling": "Budgets + anomaly detection + reserved instance management" },
+          { "level": "Run",   "characteristics": "Weekly optimization, full chargeback, automated rightsizing", "azureTooling": "Azure Monitor + custom dashboards + automated Advisor" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "step-7",
+    "number": "07",
+    "title": "Establish the Operational Model",
+    "subtitle": "Define how the architecture is deployed, changed, monitored, and recovered — by people, not just tools.",
+    "wafPillars": { "primary": ["operational-excellence"], "secondary": ["reliability", "security"] },
+    "duration": { "land": "1–2 days", "scale": "3–5 days", "govern": "2–3 weeks" },
+    "complexityDrivers": [
+      "Number of teams owning different platform components",
+      "Regulatory change management requirements (CAB process)",
+      "GitOps maturity of the engineering team",
+      "Number of environments requiring promotion pipeline"
+    ],
+    "deliverables": [
+      "IaC repository structure with branching strategy",
+      "CI/CD pipeline design (environment promotion gates)",
+      "Deployment safety pattern selected",
+      "Runbook library",
+      "On-call rotation and escalation path",
+      "Post-incident review (PIR) process documented"
+    ],
+    "stakeholders": ["Platform engineering lead", "Site reliability engineer (SRE)", "Security operations", "Change Advisory Board (Tier 3)"],
+    "gates": [],
+    "criticalPath": false,
+    "interactiveTools": ["waf-coverage-tracker"],
+    "subSteps": [
+      {
+        "id": "7a",
+        "title": "Infrastructure as Code Discipline",
+        "question": "Is all Azure infrastructure defined in version-controlled code?",
+        "summary": "Resources created through the Azure portal are configuration drift. All production resources must be defined in IaC. Bicep is the recommended choice for Azure-native deployments.",
+        "iacOptions": [
+          { "tool": "Bicep",        "language": "Azure DSL",     "stateManagement": "Stateless (ARM manages state)", "whenToUse": "Azure-only; Microsoft-supported; recommended for Tier 1–3" },
+          { "tool": "Terraform",    "language": "HCL",           "stateManagement": "Stateful (tfstate file)",      "whenToUse": "Multi-cloud; existing Terraform practice" },
+          { "tool": "Pulumi",       "language": "TS/Python/Go",  "stateManagement": "Stateful",                     "whenToUse": "Developer-centric, type-safe IaC" },
+          { "tool": "ARM templates","language": "JSON",          "stateManagement": "Stateless",                    "whenToUse": "Legacy — prefer Bicep for new work" }
+        ]
+      },
+      {
+        "id": "7b",
+        "title": "Deployment Safety Patterns",
+        "question": "What is the blast radius of a bad deployment, and how quickly can it be reversed?",
+        "summary": "Production deployments are the highest-risk change operation. Safety patterns reduce the blast radius of a bad deployment and define the rollback path before anything goes wrong.",
+        "patterns": [
+          { "pattern": "Blue/green",      "trafficShift": "0% → 100% instant cutover",   "rollbackSpeed": "Instant re-switch",       "whenToUse": "Major releases, schema changes" },
+          { "pattern": "Canary",          "trafficShift": "1% → 10% → 100% progressive", "rollbackSpeed": "Reduce canary to 0%",     "whenToUse": "Feature releases, performance-sensitive changes" },
+          { "pattern": "Ring deployment", "trafficShift": "Internal → early adopters → regions", "rollbackSpeed": "Halt ring progression", "whenToUse": "Platform services, shared infrastructure" },
+          { "pattern": "Feature flags",   "trafficShift": "Toggle — no traffic split",   "rollbackSpeed": "Toggle off instantly",    "whenToUse": "Application features, A/B testing" }
+        ]
+      },
+      {
+        "id": "7c",
+        "title": "Change Management and GitOps",
+        "question": "Can every infrastructure change be traced to a pull request with documented approval?",
+        "summary": "At Tier 3, production changes require documented approval. GitOps makes the PR history the audit trail — every change has an author, a reviewer, a Bicep what-if output, and a deployment record.",
+        "keyPoints": [
+          "Bicep what-if output is a required PR artifact for infrastructure changes at Tier 2+",
+          "Security scans (Checkov / PSRule for Azure) run automatically in CI",
+          "Manual approval gate before production deployment — never fully automated for infrastructure",
+          "CAB integration at Tier 3: PR merge triggers CAB notification; production gate requires CAB approval record"
+        ]
+      },
+      {
+        "id": "7d",
+        "title": "Incident Response Runbooks",
+        "question": "Can any on-call engineer resolve every failure mode identified in Step 5?",
+        "summary": "Every failure mode from the blast radius analysis must have a corresponding runbook. A runbook is a documented, tested procedure that any on-call engineer can follow under pressure without domain expertise.",
+        "minimumRunbooks": [
+          { "runbook": "Region failover",      "trigger": "Front Door health probe failure",       "keySteps": "Verify alert → confirm region status → trigger SQL failover → verify DNS → confirm traffic shift → notify" },
+          { "runbook": "Database restore",     "trigger": "Data corruption / accidental deletion", "keySteps": "Point-in-time restore → validation queries → rollback decision criteria" },
+          { "runbook": "Security incident",    "trigger": "Sentinel high-severity alert",          "keySteps": "Isolation → evidence preservation → escalation → regulatory notification timeline" },
+          { "runbook": "Deployment rollback",  "trigger": "Smoke test failure / user impact",      "keySteps": "Slot swap reversal / canary reduction / feature flag disable → post-mortem trigger" }
+        ]
+      },
+      {
+        "id": "7e",
+        "title": "Post-Incident Review (PIR) Process",
+        "question": "Does the team get systematically better after every significant incident?",
+        "summary": "A blameless PIR after every significant incident drives continuous improvement. Organizations that run blame-oriented post-mortems see recurring incidents because engineers avoid reporting near-misses.",
+        "pirStructure": [
+          "Incident timeline (factual, UTC timestamps)",
+          "Root cause (systemic — not 'human error')",
+          "Contributing factors",
+          "Impact (users affected, duration, data loss)",
+          "What worked well",
+          "What needs improvement",
+          "Action items (owner + due date)"
+        ]
+      }
+    ]
+  }
+]

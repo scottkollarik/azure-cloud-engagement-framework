@@ -1,0 +1,126 @@
+[
+  {
+    "id": "land",
+    "number": 1,
+    "label": "Land",
+    "tagline": "Net-new Azure footprint",
+    "color": "#3b82f6",
+    "tailwind": "tier-land",
+    "description": "A greenfield Azure deployment for a single workload with no existing cloud estate to integrate. The focus is getting the foundation right — landing zone design, identity, networking baseline, and first workload deployment.",
+    "posture": "Greenfield",
+    "scope": "Single workload, single subscription, no hybrid connectivity required",
+    "wafFocus": ["reliability", "security"],
+    "keyPatterns": [
+      "Hub-spoke virtual network (simplified — single hub, one spoke)",
+      "Microsoft Entra ID baseline (MFA, Conditional Access)",
+      "Single-region deployment with Availability Zone spread",
+      "Azure Monitor + Application Insights baseline",
+      "Azure Backup for data protection",
+      "Basic Azure Policy assignments (Security Benchmark)"
+    ],
+    "keyServices": [
+      "Azure App Service / Container Apps",
+      "Azure SQL Database",
+      "Azure Key Vault",
+      "Azure Virtual Network",
+      "Azure Monitor",
+      "Microsoft Entra ID"
+    ],
+    "iacReadiness": "IaC can begin after Step 2. Governance boundary is thin at this tier — management groups and policy are lightweight.",
+    "typicalDuration": "4–8 weeks end-to-end",
+    "steps": [
+      { "stepId": "step-1", "duration": "2–4 hours",  "notes": "Constraints are typically simpler — single workload, lower regulatory pressure" },
+      { "stepId": "step-2", "duration": "1–2 days",   "notes": "Lightweight governance: single subscription, basic Entra ID, simple hub VNet" },
+      { "stepId": "step-3", "duration": "4–8 hours",  "notes": "One or two data stores; replication may be single-region initially" },
+      { "stepId": "step-4", "duration": "1–2 days",   "notes": "Straightforward compute selection; no ExpressRoute" },
+      { "stepId": "step-5", "duration": "2–4 hours",  "notes": "Fewer failure domains to analyze" },
+      { "stepId": "step-6", "duration": "2–4 hours",  "notes": "Basic right-sizing; no Reserved Instances until 30-day baseline" },
+      { "stepId": "step-7", "duration": "1–2 days",   "notes": "Simple CI/CD pipeline; blue/green via App Service slots" }
+    ]
+  },
+  {
+    "id": "scale",
+    "number": 2,
+    "label": "Scale",
+    "tagline": "Existing Azure estate, growing complexity",
+    "color": "#7c3aed",
+    "tailwind": "tier-scale",
+    "description": "An existing Azure estate with multiple workloads and integration requirements — on-premises connectivity, third-party SaaS, or multiple product teams sharing platform infrastructure. Platform engineering patterns become necessary.",
+    "posture": "Platform engineering layer emerging",
+    "scope": "Multi-workload, multiple subscriptions, hybrid connectivity, shared services",
+    "wafFocus": ["cost-optimization", "operational-excellence", "performance-efficiency"],
+    "keyPatterns": [
+      "Azure Virtual WAN or mature hub-spoke with multiple spokes",
+      "Subscription vending (automated provisioning for new teams)",
+      "Azure Policy baseline initiative (Security Benchmark + custom)",
+      "Privileged Identity Management (PIM) — no standing Owner",
+      "Log Analytics workspace hierarchy with Sentinel",
+      "Azure Cost Management tagging strategy + budgets",
+      "ExpressRoute or VPN Gateway for hybrid connectivity",
+      "Private Endpoints for all production PaaS"
+    ],
+    "keyServices": [
+      "Azure Virtual WAN",
+      "Azure Policy",
+      "Microsoft Entra PIM",
+      "Microsoft Sentinel",
+      "Azure Cost Management",
+      "Azure Kubernetes Service",
+      "Azure SQL Auto-Failover Group"
+    ],
+    "iacReadiness": "Step 2 is the critical path. Management group topology, Policy initiative scope, and network design must be finalized before IaC templates are authored — changing these post-deployment requires resource moves.",
+    "typicalDuration": "8–16 weeks end-to-end",
+    "steps": [
+      { "stepId": "step-1", "duration": "4–8 hours",  "notes": "Multiple workload SLAs to reconcile; hybrid connectivity adds latency considerations" },
+      { "stepId": "step-2", "duration": "1–2 weeks",  "notes": "Management groups, subscription topology, Policy initiative, Private Endpoints at scale — this is the long pole", "criticalPath": true },
+      { "stepId": "step-3", "duration": "2–4 days",   "notes": "Multiple data stores with different replication requirements; data gravity analysis needed" },
+      { "stepId": "step-4", "duration": "3–5 days",   "notes": "Virtual WAN or hub-spoke decision; ExpressRoute lead time planning (4–8 weeks)" },
+      { "stepId": "step-5", "duration": "1–2 days",   "notes": "More failure domains; on-premises dependency chain" },
+      { "stepId": "step-6", "duration": "1–2 days",   "notes": "Reserved Instance decisions; multi-subscription cost aggregation" },
+      { "stepId": "step-7", "duration": "3–5 days",   "notes": "Multi-team GitOps; environment promotion gates; change management process" }
+    ]
+  },
+  {
+    "id": "govern",
+    "number": 3,
+    "label": "Govern",
+    "tagline": "Enterprise-scale, regulated workloads",
+    "color": "#10b981",
+    "tailwind": "tier-govern",
+    "description": "Regulated workloads operating at enterprise scale — multi-region, multi-product-team, with a dedicated platform team managing landing zones. Compliance policy stacks, FinOps maturity, and formal change management are non-negotiable.",
+    "posture": "Enterprise-scale",
+    "scope": "Multi-region, multi-subscription, dedicated platform team, compliance mandates",
+    "wafFocus": ["reliability", "security", "cost-optimization", "operational-excellence", "performance-efficiency"],
+    "keyPatterns": [
+      "Azure Landing Zone (ALZ) reference implementation",
+      "Enterprise-scale management group hierarchy",
+      "Azure Policy compliance stacks (FedRAMP, HIPAA, PCI, NIST 800-53)",
+      "Multi-region active-active or active-passive topology",
+      "Azure Virtual WAN with ExpressRoute primary + VPN failover",
+      "Defender for Cloud Plan 2 on all subscriptions",
+      "FinOps maturity model — Walk to Run level",
+      "Formal CAB (Change Advisory Board) process",
+      "Sovereign cloud considerations (Azure Government for FedRAMP High)"
+    ],
+    "keyServices": [
+      "Azure Landing Zone accelerator",
+      "Microsoft Defender for Cloud",
+      "Microsoft Sentinel (enterprise-scale)",
+      "Azure Virtual WAN",
+      "ExpressRoute (with VPN failover)",
+      "Azure Policy (custom initiatives)",
+      "Azure Cost Management (Management Group scope)"
+    ],
+    "iacReadiness": "Step 2 is the long pole at this tier — management group hierarchy, Policy initiative stacks, and network topology definition can take 2–4 weeks. No Bicep template should be authored until the governance boundary is signed off. Rushing this creates technical debt that is expensive to remediate.",
+    "typicalDuration": "16–32 weeks end-to-end",
+    "steps": [
+      { "stepId": "step-1", "duration": "1–2 days",   "notes": "Multiple regulatory frameworks; complex data residency; competing SLA requirements across BUs" },
+      { "stepId": "step-2", "duration": "2–4 weeks",  "notes": "Full ALZ deployment; custom Policy initiatives; Sentinel onboarding; multi-region network; Private Endpoints everywhere — the dominant workstream", "criticalPath": true },
+      { "stepId": "step-3", "duration": "1–2 weeks",  "notes": "Data sovereignty across regions; zero-RPO requirements; cross-region replication compliance" },
+      { "stepId": "step-4", "duration": "1–2 weeks",  "notes": "Multi-region active-active; ExpressRoute + VPN coexistence; per-region compute strategy" },
+      { "stepId": "step-5", "duration": "2–4 days",   "notes": "Full failure matrix; regulated incident scenarios; POA&M for identified gaps" },
+      { "stepId": "step-6", "duration": "3–5 days",   "notes": "FinOps maturity assessment; chargeback implementation; 3-year RI strategy" },
+      { "stepId": "step-7", "duration": "2–3 weeks",  "notes": "CAB integration; ATO documentation; ConMon program; enterprise runbook library" }
+    ]
+  }
+]

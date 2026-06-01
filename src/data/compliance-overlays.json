@@ -1,0 +1,185 @@
+[
+  {
+    "id": "fedramp-high",
+    "name": "FedRAMP High",
+    "shortName": "FedRAMP High",
+    "sector": ["federal", "defense", "critical-infrastructure"],
+    "color": "#3b82f6",
+    "azureRegionsRequired": ["usgovvirginia", "usgovarizona", "usgovtexas"],
+    "azureGovernmentRequired": true,
+    "policyInitiatives": ["FedRAMP High", "NIST SP 800-53 Rev 5"],
+    "forcesTier": "govern",
+    "timelineMultiplier": 1.6,
+    "summary": "Highest federal impact level — systems where compromise has severe or catastrophic effects. Requires Azure Government regions only. FIPS 140-2 validated cryptography, PIV/CAC authentication, and a formal ATO package.",
+    "stepImplications": [
+      { "stepId": "step-1", "impact": "Azure Government region pair only: USGov Virginia ↔ USGov Arizona" },
+      { "stepId": "step-2", "impact": "All services must have FedRAMP High authorization in Azure Government; FIPS 140-2 cryptographic modules; CMK required for all data" },
+      { "stepId": "step-4", "impact": "No public endpoints permitted; Azure Firewall Premium with IDPS required" },
+      { "stepId": "step-7", "impact": "Continuous monitoring (ConMon) program; monthly vulnerability scanning; annual pen test; ATO package preparation" }
+    ]
+  },
+  {
+    "id": "fedramp-moderate",
+    "name": "FedRAMP Moderate",
+    "shortName": "FedRAMP Mod",
+    "sector": ["federal", "state-local", "regulated-commercial"],
+    "color": "#3b82f6",
+    "azureRegionsRequired": ["useast", "useast2", "uswest", "uswest2"],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["FedRAMP Moderate", "NIST SP 800-53 Rev 5"],
+    "forcesTier": "govern",
+    "timelineMultiplier": 1.3,
+    "summary": "Covers the majority of federal systems handling CUI. Commercial Azure regions are sufficient. Requires full ALZ or equivalent, Private Endpoints, Defender for Cloud Plan 2, and Sentinel.",
+    "stepImplications": [
+      { "stepId": "step-1", "impact": "CUI data residency documented; cross-border replication prohibited" },
+      { "stepId": "step-2", "impact": "Full ALZ hierarchy; FedRAMP Moderate Policy initiative; Private Endpoints; Defender Plan 2" },
+      { "stepId": "step-3", "impact": "Encryption at rest (SSE with CMK) and in transit (TLS 1.2 minimum)" },
+      { "stepId": "step-7", "impact": "System Security Plan (SSP) required; annual pen test; POA&M for gaps" }
+    ]
+  },
+  {
+    "id": "nist-800-53",
+    "name": "NIST SP 800-53 Rev 5",
+    "shortName": "NIST 800-53",
+    "sector": ["federal", "state-local", "regulated-commercial", "higher-education"],
+    "color": "#3b82f6",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["NIST SP 800-53 Rev 5"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.2,
+    "summary": "The canonical US federal security controls catalog. FedRAMP is a subset. Widely adopted by non-federal organizations as a thorough security baseline. 20 control families covering access control through system integrity.",
+    "stepImplications": [
+      { "stepId": "step-2", "impact": "AC, AU, IA, SC, SI control families drive Entra ID, Log Analytics, encryption, and Sentinel requirements" },
+      { "stepId": "step-7", "impact": "IR (Incident Response) and CM (Configuration Management) control families require runbooks and IaC" }
+    ]
+  },
+  {
+    "id": "hipaa",
+    "name": "HIPAA / HITECH",
+    "shortName": "HIPAA",
+    "sector": ["healthcare", "health-insurance", "health-it"],
+    "color": "#10b981",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["HIPAA HITRUST 9.2"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.25,
+    "baaRequired": true,
+    "summary": "Governs Protected Health Information (PHI). Microsoft BAA required before any PHI can be processed in Azure. PHI in AI prompts (Azure OpenAI) is subject to HIPAA when using AOAI for healthcare — BAA covers AOAI in commercial Azure.",
+    "stepImplications": [
+      { "stepId": "step-1", "impact": "PHI data residency documented; paired region must remain BAA-covered" },
+      { "stepId": "step-2", "impact": "Audit controls §164.312(b): log all PHI access; encryption at rest and in transit required" },
+      { "stepId": "step-3", "impact": "PHI databases require CMK; geo-replication must stay in BAA-covered regions" },
+      { "stepId": "step-6", "impact": "Log retention 6 years minimum (§164.530(j))" }
+    ]
+  },
+  {
+    "id": "pci-dss",
+    "name": "PCI DSS v4.0",
+    "shortName": "PCI DSS",
+    "sector": ["financial", "retail", "ecommerce", "payment-processing"],
+    "color": "#f59e0b",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["PCI DSS v4"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.3,
+    "summary": "Required for any organization storing, processing, or transmitting cardholder data. v4.0 mandatory since March 2024. Cardholder Data Environment (CDE) must be isolated in a dedicated subscription with no shared infrastructure.",
+    "stepImplications": [
+      { "stepId": "step-2", "impact": "Dedicated CDE subscription; PIM for all CDE access; phishing-resistant MFA (FIDO2/cert); audit logs 12 months" },
+      { "stepId": "step-3", "impact": "All CHD encrypted at rest (TDE + CMK) and in transit" },
+      { "stepId": "step-4", "impact": "Azure Front Door WAF in Prevention mode required (Req 6.4); CDE VNet isolated from all non-PCI VNets" },
+      { "stepId": "step-5", "impact": "Quarterly external vulnerability scan (ASV); annual pen test" }
+    ]
+  },
+  {
+    "id": "soc2",
+    "name": "SOC 2 Type II",
+    "shortName": "SOC 2",
+    "sector": ["saas", "technology", "financial", "healthcare"],
+    "color": "#7c3aed",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["Azure Security Benchmark"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.15,
+    "summary": "AICPA audit covering Security (required) + optional Availability, Processing Integrity, Confidentiality, Privacy. Type II covers a period of 6+ months. Standard requirement for SaaS vendors selling to enterprises.",
+    "stepImplications": [
+      { "stepId": "step-2", "impact": "Immutable audit logs; Defender for Cloud compliance reports as evidence; change management via PR history" },
+      { "stepId": "step-3", "impact": "Data classification; CMK for confidentiality criterion; deletion proof for privacy criterion" },
+      { "stepId": "step-7", "impact": "Change management process is auditable evidence; deployment records required" }
+    ]
+  },
+  {
+    "id": "pcaob",
+    "name": "PCAOB Standards",
+    "shortName": "PCAOB",
+    "sector": ["public-accounting", "audit-firms", "sec-registrants"],
+    "color": "#f59e0b",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["NIST SP 800-53 Rev 5"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.2,
+    "summary": "Oversees audits of public companies under SEC jurisdiction. Primary architectural concern: immutable audit workpaper storage with 7-year retention (AS 1215), access audit trails, and segregation of duties for workpaper modification.",
+    "stepImplications": [
+      { "stepId": "step-3", "impact": "Azure Blob Storage WORM policy (time-based immutability, Locked, 2557 days minimum); RA-GRS for DR" },
+      { "stepId": "step-2", "impact": "Storage access logs in Log Analytics; PIM for workpaper access; no single user with both write and delete permissions" }
+    ]
+  },
+  {
+    "id": "gdpr",
+    "name": "GDPR",
+    "shortName": "GDPR",
+    "sector": ["all-eu-data", "global-with-eu-subjects"],
+    "color": "#06b6d4",
+    "azureRegionsRequired": ["northeurope", "westeurope", "germanywestcentral", "franccentral", "swedencentral"],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": [],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.2,
+    "dpaRequired": true,
+    "summary": "EU regulation governing personal data of EU/EEA residents. Applies globally to organizations processing EU resident data. Penalties up to €20M or 4% global revenue. Microsoft's DPA is included in the Online Services Terms.",
+    "stepImplications": [
+      { "stepId": "step-1", "impact": "EU/EEA region pair only; cross-border transfer to US requires Standard Contractual Clauses" },
+      { "stepId": "step-3", "impact": "Architecture must support Data Subject Rights: export, delete, rectify personal data per subject" },
+      { "stepId": "step-6", "impact": "Log retention limited by data minimization — anonymize or pseudonymize PII in logs beyond operational necessity" }
+    ]
+  },
+  {
+    "id": "cmmc",
+    "name": "CMMC Level 2 / 3",
+    "shortName": "CMMC",
+    "sector": ["defense", "dod-contractors"],
+    "color": "#3b82f6",
+    "azureRegionsRequired": ["usgovvirginia", "usgovarizona"],
+    "azureGovernmentRequired": true,
+    "policyInitiatives": ["NIST SP 800-53 Rev 5"],
+    "forcesTier": "govern",
+    "timelineMultiplier": 1.5,
+    "summary": "DoD contractor cybersecurity certification. Level 2 requires all 110 NIST 800-171 practices; Level 3 adds 24 from NIST 800-172. Azure Government IL4 for CUI. Foreign national access controls enforced at RBAC level.",
+    "stepImplications": [
+      { "stepId": "step-2", "impact": "Azure Government IL4; foreign national access exclusion documented; audit log retention 3 years; PAW for admin access" },
+      { "stepId": "step-7", "impact": "Supply chain risk management (SCRM) documentation for third-party components" }
+    ]
+  },
+  {
+    "id": "iso27001",
+    "name": "ISO 27001:2022",
+    "shortName": "ISO 27001",
+    "sector": ["all"],
+    "color": "#7c3aed",
+    "azureRegionsRequired": [],
+    "azureGovernmentRequired": false,
+    "policyInitiatives": ["ISO 27001:2013"],
+    "forcesTier": "scale",
+    "timelineMultiplier": 1.2,
+    "summary": "International ISMS standard. Certification requires external audit. 2022 version updated to 93 controls in 4 themes. Commonly required by European enterprise customers as vendor security baseline.",
+    "stepImplications": [
+      { "stepId": "step-2", "impact": "New control 5.23 (cloud services): Azure Security Benchmark + shared responsibility matrix documentation" },
+      { "stepId": "step-4", "impact": "New control 8.23 (web filtering): Azure Firewall Premium with URL filtering" },
+      { "stepId": "step-7", "impact": "New control 5.30 (ICT readiness for BCM): Azure Site Recovery + BCDR runbooks documented" }
+    ]
+  }
+]

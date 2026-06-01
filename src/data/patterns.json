@@ -1,0 +1,146 @@
+[
+  {
+    "id": "hub-spoke-network",
+    "title": "Hub-Spoke Network Topology",
+    "slug": "hub-spoke-network",
+    "wafPillars": ["reliability", "security"],
+    "tiers": ["land", "scale", "govern"],
+    "tags": ["networking", "foundation"],
+    "summary": "A central hub VNet hosts shared services (Azure Firewall, VPN/ExpressRoute Gateway, DNS). Spoke VNets peer to the hub and route all inter-spoke and internet-bound traffic through the hub, enforcing centralized network policy.",
+    "whenToUse": "Default for almost all Azure deployments. Use for Tier 1 and Tier 2. Migrate to Azure Virtual WAN when managing 5+ spoke VNets or multi-region complexity.",
+    "azureServices": ["Azure Virtual Network", "VNet Peering", "Azure Firewall", "Azure Bastion", "Azure DNS Private Resolver"],
+    "keyDesignDecisions": [
+      "Force-tunnel all internet-bound traffic through Azure Firewall in the hub",
+      "Spoke VNets are non-transitive — spoke-to-spoke requires hub as transit",
+      "Hub hosts all Private DNS Zones linked to all spokes",
+      "Deploy Azure Bastion in the hub for secure VM access without public IPs"
+    ],
+    "complianceRelevance": []
+  },
+  {
+    "id": "azure-virtual-wan",
+    "title": "Azure Virtual WAN",
+    "slug": "azure-virtual-wan",
+    "wafPillars": ["reliability", "performance-efficiency"],
+    "tiers": ["scale", "govern"],
+    "tags": ["networking", "global"],
+    "summary": "Microsoft-managed global network backbone that handles transit routing between spoke VNets, branches, and VPN/ExpressRoute circuits. Eliminates manual hub-spoke UDR maintenance at scale.",
+    "whenToUse": "5+ spoke VNets, multiple regions, or complex branch connectivity. Preferred over manual hub-spoke at Tier 2+ for its operational simplicity and built-in global routing.",
+    "azureServices": ["Azure Virtual WAN", "Virtual Hub", "ExpressRoute circuit", "VPN Site"],
+    "keyDesignDecisions": [
+      "Standard SKU required for ExpressRoute and VPN coexistence",
+      "Each region gets its own Virtual Hub — hubs connect to each other automatically via Microsoft backbone",
+      "Secured Virtual Hub = Virtual Hub + Azure Firewall Manager for centralized policy",
+      "Any-to-any routing enabled by default between all connections"
+    ],
+    "complianceRelevance": []
+  },
+  {
+    "id": "private-endpoint-strategy",
+    "title": "Private Endpoint Strategy",
+    "slug": "private-endpoint-strategy",
+    "wafPillars": ["security"],
+    "tiers": ["scale", "govern"],
+    "tags": ["networking", "security", "paas"],
+    "summary": "Every PaaS service accessed by production compute uses Private Endpoints, injecting the service NIC into the workload VNet. Public endpoints are disabled via Azure Policy. No PaaS traffic traverses the public internet.",
+    "whenToUse": "All production Tier 2+; mandatory at Tier 3 and for any regulated workload. Required for FedRAMP, HIPAA, and PCI DSS compliance postures.",
+    "azureServices": ["Azure Private Link", "Private Endpoint", "Private DNS Zone", "Azure Policy (deny public endpoint)"],
+    "keyDesignDecisions": [
+      "One Private Endpoint resource per PaaS service instance per VNet that needs access",
+      "Each Private Endpoint requires a Private DNS Zone A record — automate with Azure Policy (DeployIfNotExists)",
+      "Hub-spoke: DNS resolution must flow through the hub's DNS Private Resolver",
+      "Budget deployment time: 20-service architecture requires 40+ private endpoint resources"
+    ],
+    "complianceRelevance": ["hipaa", "pci-dss", "fedramp-moderate", "fedramp-high", "cmmc"]
+  },
+  {
+    "id": "sql-auto-failover-group",
+    "title": "SQL Auto-Failover Group",
+    "slug": "sql-auto-failover-group",
+    "wafPillars": ["reliability"],
+    "tiers": ["land", "scale", "govern"],
+    "tags": ["database", "ha", "dr"],
+    "summary": "Asynchronous geo-replication between primary and secondary Azure SQL instances across regions with an automated failover listener endpoint. Application connection strings point to the listener DNS name — no code change required on failover.",
+    "whenToUse": "Relational data requiring RTO < 15 minutes and RPO < 30 minutes. The default choice for production Azure SQL in any multi-region or HA scenario.",
+    "azureServices": ["Azure SQL Database", "Auto-Failover Group", "Private Endpoint (per region)"],
+    "keyDesignDecisions": [
+      "GracePeriodWithDataLossHours must be set explicitly — default is 1 hour which may violate RTO",
+      "Use the read-write listener endpoint in connection strings — never connect directly to primary server",
+      "Read-only listener can offload read traffic to the secondary during normal operations",
+      "Private Endpoints needed in both regions — don't forget the secondary region DNS zone"
+    ],
+    "complianceRelevance": []
+  },
+  {
+    "id": "cosmos-db-multi-region",
+    "title": "Cosmos DB Multi-Region Writes",
+    "slug": "cosmos-db-multi-region",
+    "wafPillars": ["reliability", "performance-efficiency"],
+    "tiers": ["scale", "govern"],
+    "tags": ["database", "global", "ha"],
+    "summary": "Cosmos DB replicates writes to all configured regions simultaneously. Read and write traffic is served from the nearest region. Near-zero RPO and RTO for non-relational data in globally distributed applications.",
+    "whenToUse": "Non-relational data with near-zero RPO requirement, globally distributed user bases, or any scenario where the 99.999% multi-write SLA is required.",
+    "azureServices": ["Azure Cosmos DB", "Private Endpoint (per region)"],
+    "keyDesignDecisions": [
+      "Configure Last-Write-Wins (LWW) conflict resolution policy — or implement custom merge function",
+      "Multi-write increases RU consumption — budget for write amplification across N regions",
+      "Consistency level selection: Strong is single-region only; Bounded Staleness or Session for multi-write",
+      "Cosmos DB Continuous Backup provides point-in-time restore independent of replication"
+    ],
+    "complianceRelevance": []
+  },
+  {
+    "id": "front-door-waf",
+    "title": "Azure Front Door with WAF",
+    "slug": "front-door-waf",
+    "wafPillars": ["security", "performance-efficiency", "reliability"],
+    "tiers": ["land", "scale", "govern"],
+    "tags": ["networking", "security", "global", "cdn"],
+    "summary": "Global HTTP/HTTPS load balancer with built-in WAF (OWASP CRS), TLS offloading, CDN, and automatic failover on origin health probe failure. The default global entry point for internet-facing workloads.",
+    "whenToUse": "Any internet-facing HTTP/HTTPS workload. Standard SKU for CDN + basic WAF. Premium SKU for advanced WAF rules, private origin connectivity, and bot protection.",
+    "azureServices": ["Azure Front Door (Standard or Premium)", "WAF Policy", "Origin Group", "Custom Domain + TLS"],
+    "keyDesignDecisions": [
+      "Premium SKU required for private endpoint origins (e.g., App Service with public access disabled)",
+      "WAF Policy must be in Prevention mode for production — Detection mode does not block attacks",
+      "Custom WAF rules supplement the managed OWASP CRS ruleset — tune exclusions before enabling Prevention",
+      "Health probe path must return 200 — configure a dedicated /health endpoint, not the homepage"
+    ],
+    "complianceRelevance": ["pci-dss", "hipaa", "fedramp-moderate"]
+  },
+  {
+    "id": "aks-keda-autoscaler",
+    "title": "AKS with KEDA and Cluster Autoscaler",
+    "slug": "aks-keda-autoscaler",
+    "wafPillars": ["performance-efficiency", "cost-optimization"],
+    "tiers": ["scale", "govern"],
+    "tags": ["compute", "containers", "scaling"],
+    "summary": "AKS cluster with KEDA for event-driven pod scaling (scale-to-zero on queue depth) and Cluster Autoscaler for node-level scaling. Combines cost efficiency (scale-to-zero for idle workloads) with burst capacity.",
+    "whenToUse": "Microservices with variable load, event-driven processing workloads, or any Tier 2+ architecture where AKS is the compute platform.",
+    "azureServices": ["AKS", "KEDA", "Azure Service Bus or Event Hubs (scaling source)", "Azure Monitor", "Container Registry"],
+    "keyDesignDecisions": [
+      "System node pool: 3 nodes across AZs minimum for control plane HA",
+      "User node pools: separate from system pool; can scale to zero with KEDA",
+      "Pod Disruption Budgets prevent Cluster Autoscaler from removing too many replicas at once",
+      "Spot node pools for batch / fault-tolerant workloads — up to 90% cost reduction"
+    ],
+    "complianceRelevance": []
+  },
+  {
+    "id": "expressroute-vpn-coexistence",
+    "title": "ExpressRoute + VPN Gateway Coexistence",
+    "slug": "expressroute-vpn-coexistence",
+    "wafPillars": ["reliability", "security"],
+    "tiers": ["scale", "govern"],
+    "tags": ["networking", "hybrid", "connectivity"],
+    "summary": "Deploy both ExpressRoute and VPN Gateway to the same Virtual Network Gateway. ExpressRoute is the primary path; VPN Gateway is the automatic BGP failover path. Provides both high-bandwidth private connectivity and resilient failover.",
+    "whenToUse": "Tier 2–3 engagements with on-premises integration requirements where ExpressRoute availability or a temporary circuit outage cannot halt operations.",
+    "azureServices": ["ExpressRoute circuit", "VPN Gateway (Zone Redundant)", "Azure Virtual Network Gateway", "Local Network Gateway"],
+    "keyDesignDecisions": [
+      "VPN Gateway must be ErGw1AZ SKU or higher to coexist with ExpressRoute — standard VPN SKU is incompatible",
+      "BGP route preference: ExpressRoute routes preferred over VPN routes automatically",
+      "ExpressRoute provisioning: 4–8 weeks carrier lead time — start this process in Step 4, not Step 7",
+      "MACsec or IPSec over ExpressRoute required for regulated workloads (ExpressRoute is not encrypted by default)"
+    ],
+    "complianceRelevance": ["fedramp-high", "fedramp-moderate", "hipaa", "cmmc"]
+  }
+]

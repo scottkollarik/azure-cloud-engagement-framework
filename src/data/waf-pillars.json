@@ -1,0 +1,87 @@
+[
+  {
+    "id": "reliability",
+    "label": "Reliability",
+    "color": "#3b82f6",
+    "tailwind": "waf-reliability",
+    "question": "Will it stay up when something breaks?",
+    "description": "Design workloads that recover automatically from failures and meet defined availability targets. Reliability encompasses resiliency (recovering from failures), availability (uptime percentage), and business continuity (data protection and disaster recovery).",
+    "keyPrinciples": [
+      "Design for failure — assume every component will fail eventually",
+      "Define and validate RTO and RPO before selecting services",
+      "Use Availability Zones for intra-region redundancy",
+      "Use region pairs for cross-region disaster recovery",
+      "Automate failover — manual recovery violates RTO targets under pressure",
+      "Test recovery procedures regularly (chaos engineering)"
+    ],
+    "azureServices": ["Azure Front Door", "Azure Traffic Manager", "Azure SQL Auto-Failover Group", "Azure Cosmos DB", "Azure Site Recovery", "Azure Backup", "Azure Load Balancer"]
+  },
+  {
+    "id": "security",
+    "label": "Security",
+    "color": "#7c3aed",
+    "tailwind": "waf-security",
+    "question": "Is access controlled and data protected?",
+    "description": "Protect workloads from threats through identity controls, network segmentation, data encryption, and continuous monitoring. The Zero-Trust model — verify explicitly, use least privilege, assume breach — underpins every security decision.",
+    "keyPrinciples": [
+      "Zero-Trust: verify every access request regardless of network location",
+      "Least-privilege: assign only the permissions actually needed",
+      "Defense in depth: multiple security layers so no single control is a single point of failure",
+      "Encrypt data at rest and in transit — always",
+      "Secrets in Key Vault, never hardcoded or in environment variables",
+      "Continuous monitoring: security without observability is theater"
+    ],
+    "azureServices": ["Microsoft Entra ID", "Azure Key Vault", "Azure Firewall", "Microsoft Defender for Cloud", "Microsoft Sentinel", "Azure Private Link", "Azure Policy"]
+  },
+  {
+    "id": "cost-optimization",
+    "label": "Cost Optimization",
+    "color": "#10b981",
+    "tailwind": "waf-cost",
+    "question": "Are we paying only for what we use?",
+    "description": "Eliminate waste, right-size resources, and build financial accountability into the architecture. Cost optimization is a continuous discipline, not a one-time cleanup. FinOps — the practice of cloud financial management — requires cultural change alongside technical controls.",
+    "keyPrinciples": [
+      "Measure before optimizing — 30 days of utilization data before committing to Reserved Instances",
+      "Match commitment type to workload predictability (PAYG → Savings Plan → Reserved Instance)",
+      "Storage lifecycle policies are mandatory — data accumulates silently in Hot tier",
+      "Tagging is the foundation of cost attribution — enforce at creation time via Policy",
+      "Cost awareness at design time, not post-deployment cleanup",
+      "FinOps maturity: Crawl → Walk → Run — don't prescribe Run tooling to a Crawl org"
+    ],
+    "azureServices": ["Azure Cost Management", "Azure Advisor", "Azure Reservations", "Azure Savings Plans", "Azure Blob Storage (lifecycle)", "Azure Monitor"]
+  },
+  {
+    "id": "operational-excellence",
+    "label": "Operational Excellence",
+    "color": "#f59e0b",
+    "tailwind": "waf-operations",
+    "question": "Can we deploy, monitor, and recover safely?",
+    "description": "Build the processes and tooling to run workloads in production reliably over time. Operational excellence covers how changes are deployed, how the system is monitored, how incidents are detected and resolved, and how the team learns from failures.",
+    "keyPrinciples": [
+      "Everything as code — infrastructure, configuration, and policy",
+      "Deploy safely with blue/green, canary, or ring deployment patterns",
+      "Observability: metrics, traces, and logs must answer 'why is this broken?' not just 'is this broken?'",
+      "Runbooks for every failure mode identified in blast radius analysis",
+      "Blameless post-incident reviews drive systemic improvement",
+      "GitOps: all changes via pull request; no manual portal changes in production"
+    ],
+    "azureServices": ["Azure Monitor", "Application Insights", "Azure DevOps", "GitHub Actions", "Azure Policy", "Azure App Configuration"]
+  },
+  {
+    "id": "performance-efficiency",
+    "label": "Performance Efficiency",
+    "color": "#06b6d4",
+    "tailwind": "waf-performance",
+    "question": "Does it scale to meet demand without waste?",
+    "description": "Match resource allocation to workload demand — scaling out when needed, scaling in when demand drops. Performance efficiency is not just about raw speed but about the architecture's ability to adapt to changing load patterns cost-effectively.",
+    "keyPrinciples": [
+      "Autoscale as the default — static capacity is either over-provisioned (waste) or under-provisioned (failure)",
+      "Cache aggressively: CDN for static assets, Redis for computed aggregates, in-memory for hot data",
+      "Choose the right compute abstraction — stateless workloads on PaaS, complex orchestration on AKS",
+      "Data gravity: place compute near its primary data store to minimize egress latency and cost",
+      "Benchmark before optimizing — measure P95/P99 latency, not just averages",
+      "AI workloads have fundamentally different latency profiles (1–30s inference vs <100ms API)"
+    ],
+    "azureServices": ["Azure Front Door", "Azure Cache for Redis", "Azure CDN", "AKS (KEDA + Cluster Autoscaler)", "Azure Container Apps", "Azure App Service (autoscale)"]
+  }
+]

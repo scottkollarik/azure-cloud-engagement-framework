@@ -1,0 +1,317 @@
+[
+  {
+    "id": "enterprise-landing-zone",
+    "slug": "enterprise-landing-zone",
+    "title": "Enterprise Landing Zone (ALZ)",
+    "subtitle": "Management group hierarchy, policy stacks, and subscription vending for enterprise-scale Azure",
+    "tiers": ["govern"],
+    "wafPrimary": "security",
+    "wafSecondary": ["operational-excellence", "reliability"],
+    "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high", "nist-800-53"],
+    "patternIds": ["hub-spoke-network", "azure-virtual-wan"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/",
+    "summary": "The Azure Landing Zone reference implementation establishes a policy-driven governance foundation for enterprise Azure estates. A management group hierarchy scopes compliance policy initiatives across all subscriptions, and subscription vending automates workload onboarding for product teams. Platform, Identity, and Connectivity subscriptions are separated from workload landing zones.",
+    "whenToUse": "Required for Govern-tier engagements with multiple product teams, regulated workloads, or a dedicated cloud platform team. Do not apply ALZ complexity to a Land-tier single-workload deployment — the governance overhead outweighs the benefit at that scale.",
+    "keyDesignDecisions": [
+      "Management group depth: Platform / Landing Zones / Sandboxes / Decommissioned is the ALZ canonical hierarchy",
+      "Policy initiative assignment at management group scope enforces compliance without per-subscription configuration",
+      "Subscription vending via Bicep or Terraform module — manual subscription creation is an anti-pattern at this tier",
+      "Connectivity subscription hosts the hub VNet, ExpressRoute/VPN gateways, and Azure Firewall (never shared with workloads)",
+      "Identity subscription hosts domain controllers, Entra Connect, PKI — isolated from workload blast radius"
+    ],
+    "layers": [
+      {
+        "name": "Governance",
+        "role": "Management group hierarchy, Policy initiative assignments, RBAC role definitions scoped to MG",
+        "services": ["Management Groups", "Azure Policy (custom initiatives)", "Azure RBAC (PIM-activated)", "Azure Deployment Stacks"]
+      },
+      {
+        "name": "Connectivity Hub",
+        "role": "Dedicated subscription hosting centralized network appliances for all spoke workloads",
+        "services": ["Azure Virtual WAN or Hub VNet", "Azure Firewall Premium", "ExpressRoute Gateway", "VPN Gateway", "Azure DNS Private Resolver", "Azure Bastion"]
+      },
+      {
+        "name": "Identity",
+        "role": "Centralized identity services in a dedicated subscription, isolated from workload blast radius",
+        "services": ["Microsoft Entra ID", "Microsoft Entra PIM", "Azure Key Vault (platform secrets)", "AD DS (if hybrid identity required)"]
+      },
+      {
+        "name": "Security & Compliance",
+        "role": "Continuous compliance posture monitoring and threat detection across all subscriptions",
+        "services": ["Microsoft Defender for Cloud (CSPM)", "Microsoft Sentinel (enterprise SIEM)", "Azure Monitor (platform logs)", "Defender for Servers / Containers / Storage"]
+      },
+      {
+        "name": "Landing Zone Subscriptions",
+        "role": "Workload subscriptions policy-inherited from management groups, spoke VNets peered to hub",
+        "services": ["Workload Subscriptions (vended)", "VNet Peering / VWAN Spoke", "Private Endpoints (all PaaS)", "Azure Cost Management (budget alerts)"]
+      }
+    ]
+  },
+  {
+    "id": "n-tier-web-app",
+    "slug": "n-tier-web-app",
+    "title": "N-Tier Web Application",
+    "subtitle": "Scalable web application with separated presentation, business logic, and data tiers",
+    "tiers": ["land", "scale"],
+    "wafPrimary": "reliability",
+    "wafSecondary": ["performance-efficiency", "security"],
+    "complianceRelevance": ["pci-dss"],
+    "patternIds": ["hub-spoke-network", "private-endpoints"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/n-tier",
+    "summary": "A classic layered architecture adapted for Azure PaaS: web tier (App Service or Container Apps) handles HTTP traffic behind Application Gateway, business logic tier processes requests, and a managed data tier (Azure SQL, Redis) persists state. Each tier scales independently and is isolated by NSG or Private Endpoints. Availability Zones spread each tier for intra-region redundancy.",
+    "whenToUse": "Well-understood workloads with clear tier separation — web applications, internal portals, APIs with database backends. Use when the team understands the deployment model and wants predictable operational behavior. Move toward microservices/AKS when the number of independently deployable business capabilities exceeds what a monolith can cleanly support.",
+    "keyDesignDecisions": [
+      "App Service Environments vs. multi-tenant App Service: use ASE only if network injection is required for compliance",
+      "Azure SQL Geo-Replication or Auto-Failover Group for RPO/RTO targets below 1 hour",
+      "Redis Cache tier: C1 (Standard, 1GB) is the minimum for production HA; Basic has no SLA",
+      "Application Gateway v2 with WAF policy is the standard ingress for PCI-scope web applications",
+      "Deployment slots (staging → production swap) for zero-downtime releases"
+    ],
+    "layers": [
+      {
+        "name": "Edge / Ingress",
+        "role": "Public traffic inspection, WAF, TLS termination, and global load balancing",
+        "services": ["Azure Application Gateway (WAF v2)", "Azure Front Door (global)", "Azure CDN (static assets)"]
+      },
+      {
+        "name": "Web / Presentation Tier",
+        "role": "Stateless HTTP request handling, session routing, and frontend serving",
+        "services": ["Azure App Service (Standard or Premium)", "Azure Container Apps", "Azure App Service Slots (staging)"]
+      },
+      {
+        "name": "Business Logic Tier",
+        "role": "API processing, background jobs, and integration with downstream services",
+        "services": ["Azure App Service (API layer)", "Azure Service Bus (async decoupling)", "Azure Functions (background processing)"]
+      },
+      {
+        "name": "Data Tier",
+        "role": "Persistent relational storage, caching layer, and blob/queue storage",
+        "services": ["Azure SQL Database (General Purpose or Business Critical)", "Azure Cache for Redis", "Azure Blob Storage", "Azure Key Vault (connection strings)"]
+      },
+      {
+        "name": "Identity & Security",
+        "role": "Managed identity for service-to-service authentication, no credential management",
+        "services": ["Managed Identity (system-assigned per service)", "Microsoft Entra ID (user auth)", "Azure Key Vault", "Private Endpoints (SQL, Redis, Storage)"]
+      },
+      {
+        "name": "Observability",
+        "role": "End-to-end request tracing, alerting, and availability monitoring",
+        "services": ["Application Insights (APM)", "Azure Monitor (metrics + alerts)", "Log Analytics Workspace", "Azure Monitor Workbooks"]
+      }
+    ]
+  },
+  {
+    "id": "aks-microservices",
+    "slug": "aks-microservices",
+    "title": "AKS Microservices Platform",
+    "subtitle": "Container orchestration platform for independently deployable microservices with GitOps delivery",
+    "tiers": ["scale", "govern"],
+    "wafPrimary": "reliability",
+    "wafSecondary": ["operational-excellence", "security", "performance-efficiency"],
+    "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high"],
+    "patternIds": ["hub-spoke-network", "private-endpoints", "containers-aks"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices",
+    "summary": "A private AKS cluster hosts independently deployable microservices managed by a platform team. Workload Identity replaces pod-level secrets. Node pools are sized and tainted per workload class (system, user, GPU). KEDA and the Cluster Autoscaler handle demand scaling. GitOps via Flux or Argo CD enforces desired state. Azure Container Registry stores and scans images before deployment.",
+    "whenToUse": "When the number of independently deployable services exceeds what a monolith can cleanly support, when teams need independent release cadences, or when container density economics justify the platform investment. Do not introduce AKS complexity for a single-team application that deploys monthly — App Service is operationally simpler.",
+    "keyDesignDecisions": [
+      "Private cluster: API server accessible only from within the VNet or via approved CIDR ranges",
+      "Workload Identity (OIDC + federated credentials) replaces pod-mounted secrets — no credential rotation required",
+      "System node pool (Standard_D4s_v5, min 3 nodes across 3 AZs) isolated from user workloads via taint",
+      "Azure CNI Overlay or Cilium for pod networking — avoid kubenet in production (no native network policy)",
+      "Container image scanning via Microsoft Defender for Containers (admission controller blocks Critical CVEs)",
+      "GitOps delivery: Flux v2 or Argo CD reconciles cluster state from a Git repository — no kubectl apply in production"
+    ],
+    "layers": [
+      {
+        "name": "Ingress / Service Mesh",
+        "role": "Cluster-internal L7 routing, mTLS between services, and external traffic admission",
+        "services": ["Azure Application Gateway Ingress Controller (AGIC)", "NGINX Ingress Controller", "Istio or OSM (service mesh, optional)", "Azure Front Door (global entry)"]
+      },
+      {
+        "name": "AKS Cluster",
+        "role": "Kubernetes control plane and node pools organized by workload class",
+        "services": ["AKS (private cluster)", "System Node Pool (tainted)", "User Node Pool(s) (per workload class)", "KEDA (event-driven autoscaling)", "Cluster Autoscaler"]
+      },
+      {
+        "name": "Container Registry & CI/CD",
+        "role": "Image build, scan, and promotion pipeline feeding GitOps reconciliation",
+        "services": ["Azure Container Registry (Premium, geo-replicated)", "GitHub Actions / Azure DevOps (build + push)", "Flux v2 or Argo CD (GitOps sync)", "Microsoft Defender for Containers (image scan)"]
+      },
+      {
+        "name": "Data & Messaging",
+        "role": "Persistent storage and async communication between microservices",
+        "services": ["Azure SQL / Cosmos DB (per-service, not shared)", "Azure Service Bus (inter-service messaging)", "Azure Event Hubs (event streaming)", "Azure Blob Storage (object storage)"]
+      },
+      {
+        "name": "Identity & Secrets",
+        "role": "Pod-level identity and secret injection without mounting credentials",
+        "services": ["Workload Identity (OIDC federated)", "Azure Key Vault (Secrets Store CSI driver)", "Managed Identity (per-namespace)", "Azure Container Registry (pull via managed identity)"]
+      },
+      {
+        "name": "Observability",
+        "role": "Cluster metrics, container logs, distributed traces, and security events",
+        "services": ["Azure Monitor for Containers", "Prometheus + Grafana (via Azure Managed Prometheus)", "Application Insights (OpenTelemetry)", "Microsoft Sentinel (Kubernetes audit logs)"]
+      }
+    ]
+  },
+  {
+    "id": "serverless-event-driven",
+    "slug": "serverless-event-driven",
+    "title": "Serverless Event-Driven Architecture",
+    "subtitle": "Event-triggered compute with durable orchestration for asynchronous workload processing",
+    "tiers": ["land", "scale"],
+    "wafPrimary": "cost-optimization",
+    "wafSecondary": ["performance-efficiency", "reliability"],
+    "complianceRelevance": [],
+    "patternIds": ["event-driven-messaging"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven",
+    "summary": "Azure Functions respond to triggers from Event Grid, Service Bus, or Blob Storage, processing events at scale with no infrastructure management. Durable Functions handle long-running orchestration with checkpoint state in Azure Storage. Event Grid fans out domain events to multiple downstream consumers. The architecture scales to zero — costs are proportional to actual invocations, not provisioned capacity.",
+    "whenToUse": "Spiky or unpredictable workloads where scale-to-zero economics matter: file processing, webhook handlers, integration pipelines, and async background work. Not suitable for sub-10ms latency requirements (cold start) or stateful streaming workloads where Azure Stream Analytics or Event Hubs with Kafka protocol is more appropriate.",
+    "keyDesignDecisions": [
+      "Consumption Plan for true scale-to-zero economics; Premium Plan required if VNet injection or warm instances are needed",
+      "Durable Functions for workflows with checkpoints, fan-out/fan-in, or human approval steps — avoid long-running logic in standard functions",
+      "Dead-letter queue (DLQ) on every Service Bus subscription — silent message loss is unacceptable in production",
+      "Idempotency: every function must handle duplicate message delivery safely (at-least-once delivery is the default)",
+      "Event Grid custom topics for domain events; System topics for native Azure resource events (Blob created, etc.)"
+    ],
+    "layers": [
+      {
+        "name": "Event Sources / Triggers",
+        "role": "Events that initiate function execution — HTTP, timer, storage, messaging, and native Azure resource events",
+        "services": ["Azure Event Grid (system + custom topics)", "Azure Service Bus (queues + topics)", "Azure Blob Storage (trigger on upload)", "HTTP trigger (webhook)"]
+      },
+      {
+        "name": "Compute",
+        "role": "Stateless event processors and stateful orchestrators",
+        "services": ["Azure Functions (Consumption or Premium)", "Durable Functions (orchestrator + activity)", "Azure Logic Apps (low-code integration)", "Azure Container Apps (longer-running jobs)"]
+      },
+      {
+        "name": "Messaging & Integration",
+        "role": "Durable async communication, fan-out routing, and retry/DLQ semantics",
+        "services": ["Azure Service Bus (guaranteed delivery, sessions)", "Azure Event Hubs (high-throughput streaming)", "Azure Event Grid (reactive routing)", "Azure Storage Queues (simple queuing)"]
+      },
+      {
+        "name": "Data & State",
+        "role": "Durable function state storage, results persistence, and reference data",
+        "services": ["Azure Storage (Durable Functions state)", "Azure Cosmos DB (results store)", "Azure SQL Database (relational outcomes)", "Azure Cache for Redis (ephemeral state)"]
+      },
+      {
+        "name": "Identity & Security",
+        "role": "Managed identity for trigger binding authentication, no connection string secrets in code",
+        "services": ["Managed Identity (function app)", "Azure Key Vault (connection string references)", "Private Endpoints (Service Bus, Storage)", "Azure API Management (HTTP trigger gateway)"]
+      },
+      {
+        "name": "Observability",
+        "role": "Invocation traces, failure alerts, DLQ monitoring, and orchestration state visibility",
+        "services": ["Application Insights (built-in Functions integration)", "Azure Monitor (alerts on DLQ depth)", "Log Analytics Workspace", "Azure Monitor Workbooks (pipeline health)"]
+      }
+    ]
+  },
+  {
+    "id": "multi-region-active-passive",
+    "slug": "multi-region-active-passive",
+    "title": "Multi-Region Active-Passive",
+    "subtitle": "Cross-region failover architecture for workloads with sub-1-hour RTO requirements",
+    "tiers": ["scale", "govern"],
+    "wafPrimary": "reliability",
+    "wafSecondary": ["cost-optimization", "operational-excellence"],
+    "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high"],
+    "patternIds": ["multi-region-dr"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/high-availability/traffic-manager-application-gateway",
+    "summary": "The primary region handles all production traffic. The secondary region is warm-standby: the application is deployed and healthy, data is replicated asynchronously, and traffic failover is automated via Azure Traffic Manager or Azure Front Door. On primary-region failure, Traffic Manager detects the unhealthy endpoint and routes traffic to the secondary within minutes. RTO targets of 15–60 minutes are achievable; sub-15-minute RTO requires active-active.",
+    "whenToUse": "Workloads with an RTO target between 15 minutes and 4 hours that cannot justify the cost of active-active. Regulated workloads often require documented DR capability with tested failover. Active-passive is the right trade-off when writes are infrequent enough that async replication lag (RPO 1–15 minutes) is acceptable.",
+    "keyDesignDecisions": [
+      "Azure Front Door is preferred over Traffic Manager for HTTP workloads — sub-minute failover vs. 30-second DNS TTL minimum",
+      "Azure SQL Auto-Failover Group replicates data asynchronously — measure replication lag under production write load before committing to RPO target",
+      "Secondary region App Service / AKS must be deployed and passing health checks before failover — cold secondaries extend RTO unpredictably",
+      "DNS-based failover (Traffic Manager) requires application clients to respect TTL — short TTL (30–60s) required",
+      "Chaos testing: run a scheduled failover drill quarterly; untested DR plans fail at the worst possible moment"
+    ],
+    "layers": [
+      {
+        "name": "Global Traffic Routing",
+        "role": "Health-check-driven failover between primary and secondary regions",
+        "services": ["Azure Front Door (Priority routing + health probes)", "Azure Traffic Manager (DNS-based, for non-HTTP)", "Azure DDoS Protection (both regions)"]
+      },
+      {
+        "name": "Primary Region Compute",
+        "role": "Active traffic handlers — App Service, AKS, or Container Apps with Availability Zone spread",
+        "services": ["Azure App Service (Premium, zone redundant)", "AKS (zone-spread node pools)", "Azure Application Gateway (zone redundant)", "Azure Load Balancer (Standard, zone redundant)"]
+      },
+      {
+        "name": "Secondary Region Compute",
+        "role": "Warm standby — deployed, health-checked, scaled-down until failover",
+        "services": ["Azure App Service (same config as primary, scaled down)", "AKS (minimal node count, scales on failover)", "Azure Application Gateway (secondary region)"]
+      },
+      {
+        "name": "Data Replication",
+        "role": "Async replication from primary to secondary — defines the RPO target",
+        "services": ["Azure SQL Auto-Failover Group (async replication)", "Azure Cosmos DB (multi-region write or single-write + read replica)", "Azure Blob Storage (GRS / GZRS)", "Azure Cache for Redis (geo-replication, Premium tier)"]
+      },
+      {
+        "name": "Identity & Secrets",
+        "role": "Cross-region secret availability — Key Vault must be reachable from secondary during outage",
+        "services": ["Azure Key Vault (geo-replicated within region pair)", "Managed Identity (deployed in both regions)", "Microsoft Entra ID (globally available — no DR action needed)"]
+      },
+      {
+        "name": "Observability & Failover Automation",
+        "role": "Health monitoring, automated failover trigger, and post-incident analysis",
+        "services": ["Azure Monitor (cross-region dashboards)", "Application Insights (availability tests — both regions)", "Azure Automation (failover runbooks)", "Log Analytics (centralized, cross-region ingestion)"]
+      }
+    ]
+  },
+  {
+    "id": "regulated-workload-pci-hipaa",
+    "slug": "regulated-workload-pci-hipaa",
+    "title": "Regulated Workload (PCI-DSS / HIPAA)",
+    "subtitle": "Network segmentation, audit logging, and compliance controls for regulated data environments",
+    "tiers": ["govern"],
+    "wafPrimary": "security",
+    "wafSecondary": ["reliability", "operational-excellence"],
+    "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high", "nist-800-53"],
+    "patternIds": ["hub-spoke-network", "private-endpoints", "azure-virtual-wan"],
+    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/aks/pci-intro",
+    "summary": "Regulated workloads require layered controls that satisfy auditor requirements: a defined cardholder data environment (CDE) or PHI boundary, network segmentation enforced by Azure Firewall and NSGs, comprehensive audit logging shipped to a SIEM, encryption at rest and in transit, and a documented access control model. The architecture scope is intentionally kept minimal — only services that must touch regulated data are in-scope.",
+    "whenToUse": "Any workload processing, storing, or transmitting cardholder data (PCI-DSS), protected health information (HIPAA), or federal data (FedRAMP). Engage a QSA (PCI) or compliance officer early — architectural decisions made before their review often require expensive redesign. The compliance overlay in this framework's Timeline page includes the additional weeks these reviews add.",
+    "keyDesignDecisions": [
+      "Scope minimization: the smallest possible CDE / PHI boundary is the correct boundary — every additional service adds compliance surface area",
+      "All traffic in/out of the regulated boundary transits Azure Firewall — no peering that bypasses the firewall",
+      "PCI DSS Requirement 10: logs must be shipped to an immutable, access-controlled SIEM within 24 hours — Sentinel + Log Analytics with WORM retention satisfies this",
+      "No standing privileged access: PIM-activated roles, JIT VM access, time-bound access reviews for all in-scope systems",
+      "Encryption key management: Customer-Managed Keys (CMK) required for PCI scope data stores; Key Vault HSM-backed keys for highest assurance",
+      "Defender for Cloud regulatory compliance dashboard provides continuous control assessment — use it as the baseline for audit evidence packages"
+    ],
+    "layers": [
+      {
+        "name": "Regulated Boundary (CDE / PHI Zone)",
+        "role": "Strictly network-segmented zone containing only services that must process regulated data",
+        "services": ["Dedicated Subscription (regulated scope)", "Dedicated VNet (no direct peering to non-regulated)", "Azure Policy (deny public endpoints, enforce CMK, require tags)", "Azure Firewall (all ingress/egress inspected)"]
+      },
+      {
+        "name": "Compute (In-Scope)",
+        "role": "Compute resources that process regulated data — hardened OS baseline, no public IP",
+        "services": ["AKS (private cluster, CIS-hardened nodes)", "Azure App Service (ASE or private endpoint)", "Azure Virtual Machines (if required — hardened via Azure Security Benchmark)", "Azure Container Apps (private)"]
+      },
+      {
+        "name": "Data (In-Scope)",
+        "role": "Data stores holding regulated data — CMK encryption, private endpoints, no public access",
+        "services": ["Azure SQL (Business Critical, CMK, private endpoint)", "Azure Blob Storage (CMK, private endpoint, immutable retention)", "Azure Key Vault (HSM-backed keys, private endpoint)", "Azure Cosmos DB (CMK, private endpoint)"]
+      },
+      {
+        "name": "Access Control",
+        "role": "No standing access to in-scope systems — all privileged access is time-bound and audited",
+        "services": ["Microsoft Entra PIM (activated roles only)", "Azure Bastion (JIT VM access)", "Conditional Access (MFA, compliant device, named location)", "Azure AD Access Reviews (quarterly)"]
+      },
+      {
+        "name": "Audit Logging & SIEM",
+        "role": "Comprehensive, tamper-evident audit trail for all access and control-plane activity",
+        "services": ["Microsoft Sentinel (SIEM + SOAR)", "Log Analytics (WORM retention policy)", "Defender for Cloud (PCI/HIPAA compliance dashboard)", "Azure Activity Log (control-plane audit)", "Diagnostic Settings (all in-scope resources)"]
+      },
+      {
+        "name": "Vulnerability & Posture Management",
+        "role": "Continuous assessment of misconfigurations, unpatched vulnerabilities, and compliance drift",
+        "services": ["Microsoft Defender for Cloud (CSPM + Regulatory Compliance)", "Defender for Servers (Qualys/MDE integration)", "Defender for Containers (image scan + runtime)", "Azure Policy (continuous compliance enforcement)"]
+      }
+    ]
+  }
+]
