@@ -191,12 +191,13 @@ const PATTERNS = [
 ]
 
 const MESSAGING_ROWS = [
-  { label: 'Protocol',         sb: 'AMQP / HTTP',                          eg: 'HTTPS (push)',                          eh: 'AMQP / Kafka / HTTP' },
-  { label: 'Delivery',         sb: 'At-least-once; dead-letter queue',      eg: 'At-least-once; retry up to 24 hours',   eh: 'At-least-once within retention window' },
-  { label: 'Max message',      sb: '100 MB (Premium tier)',                  eg: '1 MB',                                  eh: '1 MB standard · 100 MB Premium' },
-  { label: 'Ordering',         sb: 'Per session (sessions required)',         eg: 'No guarantee',                          eh: 'Per partition (partition key required)' },
-  { label: 'Use when',         sb: 'Transactional workflows, ordered processing, competing consumers, financial transactions', eg: 'Reactive fan-out, Azure resource events (blob created, VM stopped), webhook delivery', eh: 'High-throughput telemetry, IoT, log streaming, data pipeline ingestion, Kafka migration' },
-  { label: 'Not when',         sb: 'High-throughput streaming; fan-out to many independent handlers', eg: 'Guaranteed delivery beyond 24h; large payloads; ordered processing', eh: 'Transactional workflows; guaranteed delivery beyond retention window' },
+  { label: 'Protocol',         sb: 'AMQP / HTTP',                          eg: 'HTTPS (push)',                          eh: 'AMQP / Kafka / HTTP',                     k: 'Kafka binary protocol' },
+  { label: 'Delivery',         sb: 'At-least-once; dead-letter queue',      eg: 'At-least-once; retry up to 24 hours',   eh: 'At-least-once within retention window',   k: 'At-least-once; configurable acks' },
+  { label: 'Max message',      sb: '100 MB (Premium tier)',                  eg: '1 MB',                                  eh: '1 MB standard · 100 MB Premium',          k: '1 MB default; configurable' },
+  { label: 'Ordering',         sb: 'Per session (sessions required)',         eg: 'No guarantee',                          eh: 'Per partition (partition key required)',   k: 'Per partition (partition key required)' },
+  { label: 'Managed options',  sb: 'Azure fully managed',                   eg: 'Azure fully managed',                   eh: 'Azure fully managed',                      k: 'Confluent Cloud (Azure Marketplace) · Strimzi on AKS · HDInsight Kafka (deprecated)' },
+  { label: 'Use when',         sb: 'Transactional workflows, ordered processing, competing consumers, financial transactions', eg: 'Reactive fan-out, Azure resource events (blob created, VM stopped), webhook delivery', eh: 'High-throughput telemetry, IoT, log streaming, data pipeline ingestion; Event Hubs Kafka API lets existing Kafka clients connect without code changes', k: 'Existing Kafka producers/consumers that cannot be repointed; Kafka Streams or Kafka Connect ecosystem dependency; team has deep Kafka expertise and operational maturity' },
+  { label: 'Not when',         sb: 'High-throughput streaming; fan-out to many independent handlers', eg: 'Guaranteed delivery beyond 24h; large payloads; ordered processing', eh: 'Transactional workflows; guaranteed delivery beyond retention window', k: 'Greenfield — Event Hubs with Kafka API gives 90% of the benefit with no cluster to operate; avoid unless you have a specific Kafka-ecosystem dependency' },
 ]
 
 const TIER_DEFAULTS = [
@@ -383,44 +384,46 @@ export default function ApplicationPatterns() {
                     </div>
 
                   </div>
+
+                  {p.id === 'event-driven' && (
+                    <div className="border-t border-border px-6 py-5">
+                      <p className="text-2xs font-semibold uppercase tracking-widest text-text-secondary font-display mb-1">Messaging Backbone Selection</p>
+                      <p className="text-sm font-body text-text-secondary leading-relaxed mb-4">
+                        {hl('Once you have committed to an event-driven pattern, the next decision is which Azure messaging service to use as the backbone. Choosing the wrong one is a Step 03 data architecture problem that surfaces as a Step 05 failure mode — the three services are not interchangeable.')}
+                      </p>
+                      <div className="border border-border overflow-x-auto">
+                        <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_1fr] min-w-[800px]">
+                          <div className="bg-surface border-b border-border px-4 py-2.5" />
+                          {['Azure Service Bus', 'Azure Event Grid', 'Azure Event Hubs', 'Apache Kafka (on Azure)'].map(h => (
+                            <div key={h} className="bg-surface border-b border-border px-4 py-2.5">
+                              <span className="text-2xs font-semibold uppercase tracking-widest text-text-primary font-display">{h}</span>
+                            </div>
+                          ))}
+                          {MESSAGING_ROWS.map((row, idx) => (
+                            <Fragment key={idx}>
+                              <div className={`px-4 py-3 ${idx < MESSAGING_ROWS.length - 1 ? 'border-b border-border' : ''} ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'}`}>
+                                <span className="text-2xs font-semibold uppercase tracking-widest text-text-secondary font-display">{row.label}</span>
+                              </div>
+                              {[row.sb, row.eg, row.eh, row.k].map((val, ci) => (
+                                <div key={ci} className={`px-4 py-3 ${idx < MESSAGING_ROWS.length - 1 ? 'border-b border-border' : ''} ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'}`}>
+                                  <span className="text-xs font-body text-text-secondary leading-snug">{val}</span>
+                                </div>
+                              ))}
+                            </Fragment>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="mt-2 text-2xs text-text-secondary font-mono">
+                        Service Bus and Event Hubs can coexist — Service Bus for transactional workflows, Event Hubs for telemetry pipelines. Event Grid is most useful as a fan-out layer on top of the other two. If migrating from Kafka, Event Hubs is the Azure-native landing zone.
+                      </p>
+                    </div>
+                  )}
+
                 </div>
               )}
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Messaging Decision Matrix */}
-      <section className="mb-8">
-        <SectionHeader label="Messaging" title="Service Bus vs Event Grid vs Event Hubs" />
-        <p className="text-sm text-text-secondary font-body leading-relaxed mb-4 max-w-2xl">
-          {hl('The three Azure messaging services cover different use cases. Choosing the wrong one is a Step 03 data architecture problem that surfaces as a Step 05 failure mode. Make this decision in Step 01 alongside the application pattern.')}
-        </p>
-        <div className="border border-border overflow-x-auto">
-          <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr] min-w-[640px]">
-            <div className="bg-surface border-b border-border px-4 py-2.5" />
-            {['Azure Service Bus', 'Azure Event Grid', 'Azure Event Hubs'].map(h => (
-              <div key={h} className="bg-surface border-b border-border px-4 py-2.5">
-                <span className="text-2xs font-semibold uppercase tracking-widest text-text-primary font-display">{h}</span>
-              </div>
-            ))}
-            {MESSAGING_ROWS.map((row, idx) => (
-              <Fragment key={idx}>
-                <div className={`px-4 py-3 ${idx < MESSAGING_ROWS.length - 1 ? 'border-b border-border' : ''} ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'}`}>
-                  <span className="text-2xs font-semibold uppercase tracking-widest text-text-secondary font-display">{row.label}</span>
-                </div>
-                {[row.sb, row.eg, row.eh].map((val, ci) => (
-                  <div key={ci} className={`px-4 py-3 ${idx < MESSAGING_ROWS.length - 1 ? 'border-b border-border' : ''} ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'}`}>
-                    <span className="text-xs font-body text-text-secondary leading-snug">{val}</span>
-                  </div>
-                ))}
-              </Fragment>
-            ))}
-          </div>
-        </div>
-        <p className="mt-2 text-2xs text-text-secondary font-mono">
-          Service Bus and Event Hubs can coexist in the same architecture — Service Bus for transactional workflows, Event Hubs for telemetry pipelines. Event Grid is most useful as a fan-out layer on top of the other two.
-        </p>
       </section>
 
     </div>

@@ -17,8 +17,8 @@ const ENTRY_POINTS = [
   },
   {
     to: '/patterns',
-    label: 'Patterns Library',
-    description: 'Reusable architecture patterns indexed by WAF pillar, tier, and compliance overlay.',
+    label: 'WAF Patterns',
+    description: 'Reusable implementation patterns indexed by WAF pillar, tier, and compliance overlay.',
     accent: 'border-waf-security text-waf-security',
     tag: 'Reference',
   },

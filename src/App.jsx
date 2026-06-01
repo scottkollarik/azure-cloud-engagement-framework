@@ -15,6 +15,10 @@ import Troubleshooting from './pages/Troubleshooting'
 import IacReference from './pages/IacReference'
 import Tradeoffs from './pages/Tradeoffs'
 import ApplicationPatterns from './pages/ApplicationPatterns'
+import IdentityDesign from './pages/IdentityDesign'
+import NetworkDesign from './pages/NetworkDesign'
+import ObservabilityDesign from './pages/ObservabilityDesign'
+import MicroservicesDesign from './pages/MicroservicesDesign'
 
 export default function App() {
   return (
@@ -36,6 +40,10 @@ export default function App() {
           <Route path="iac" element={<IacReference />} />
           <Route path="tradeoffs" element={<Tradeoffs />} />
           <Route path="application-patterns" element={<ApplicationPatterns />} />
+          <Route path="identity-design" element={<IdentityDesign />} />
+          <Route path="network-design" element={<NetworkDesign />} />
+          <Route path="observability-design" element={<ObservabilityDesign />} />
+          <Route path="microservices-design" element={<MicroservicesDesign />} />
         </Route>
       </Routes>
     </BrowserRouter>
