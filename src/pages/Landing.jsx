@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom'
-import stepsData from '../data/framework-steps.json'
 
 const ENTRY_POINTS = [
   {
     to: '/engagement-tiers',
     label: 'Engagement Tiers',
-    description: 'Land · Scale · Govern — choose your maturity posture and scope the engagement.',
+    description: 'Land · Scale · Govern — scope the engagement depth by workload complexity and regulatory posture.',
     accent: 'border-tier-land text-tier-land',
     tag: 'Start here',
   },
@@ -45,6 +44,13 @@ const ENTRY_POINTS = [
     tag: 'Reference',
   },
   {
+    to: '/tradeoffs',
+    label: 'Tradeoffs',
+    description: 'Competing objectives framed as business conversations — reliability vs cost, security vs performance, and more.',
+    accent: 'border-waf-cost text-waf-cost',
+    tag: 'Reference',
+  },
+  {
     to: '/iac',
     label: 'IaC Reference',
     description: 'Bicep vs Terraform decision matrix, module structure, state management, pipeline patterns, and testing.',
@@ -75,31 +81,13 @@ const ENTRY_POINTS = [
 ]
 
 const WAF_PILLARS = [
-  { label: 'Reliability',            color: 'bg-waf-reliability' },
-  { label: 'Security',               color: 'bg-waf-security' },
-  { label: 'Cost Optimization',      color: 'bg-waf-cost' },
-  { label: 'Operational Excellence', color: 'bg-waf-operations' },
-  { label: 'Performance Efficiency', color: 'bg-waf-performance' },
+  { label: 'Reliability',            color: 'bg-waf-reliability',  cls: 'text-waf-reliability border-waf-reliability/40',  desc: 'Uptime, fault isolation, recovery objectives' },
+  { label: 'Security',               color: 'bg-waf-security',     cls: 'text-waf-security border-waf-security/40',         desc: 'Identity, data protection, threat detection' },
+  { label: 'Cost Optimization',      color: 'bg-waf-cost',         cls: 'text-waf-cost border-waf-cost/40',                 desc: 'Right-sizing, reserved capacity, waste elimination' },
+  { label: 'Operational Excellence', color: 'bg-waf-operations',   cls: 'text-waf-operations border-waf-operations/40',     desc: 'Observability, deployment safety, runbooks' },
+  { label: 'Performance Efficiency', color: 'bg-waf-performance',  cls: 'text-waf-performance border-waf-performance/40',   desc: 'Latency, throughput, scaling architecture' },
 ]
 
-const FRAMEWORK_STEPS = stepsData.map(s => ({
-  n:        s.number,
-  label:    s.title,
-  subtitle: s.subtitle,
-  pillars:  [...(s.wafPillars.primary ?? []), ...(s.wafPillars.secondary ?? [])].map(p =>
-    p.replace('cost-optimization', 'cost').replace('operational-excellence', 'operations').replace('performance-efficiency', 'performance')
-  ),
-  critical: s.criticalPath ?? false,
-  duration: s.duration,
-}))
-
-const PILLAR_DOT = {
-  reliability:  'bg-waf-reliability',
-  security:     'bg-waf-security',
-  cost:         'bg-waf-cost',
-  operations:   'bg-waf-operations',
-  performance:  'bg-waf-performance',
-}
 
 export default function Landing() {
   return (
@@ -124,7 +112,7 @@ export default function Landing() {
             to="/engagement-tiers"
             className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-display font-semibold rounded transition-colors hover:bg-blue-500"
           >
-            Start: Choose a Tier
+            Start: Engagement Tiers
             <ArrowRight />
           </Link>
           <Link
@@ -136,49 +124,25 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Framework step sequence */}
+      {/* WAF definition */}
       <section className="mb-16">
-        <SectionHeader label="Framework" title="7-Step Engagement Sequence" />
-        <div className="grid grid-cols-1 gap-px bg-border border border-border">
-          {FRAMEWORK_STEPS.map((step) => (
-            <Link
-              key={step.n}
-              to="/framework"
-              className="flex items-start gap-4 bg-surface px-5 py-4 hover:bg-border/30 transition-colors group"
-            >
-              <span className="font-mono text-text-secondary text-sm w-6 shrink-0 pt-0.5">{step.n}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-display text-sm font-semibold text-text-primary group-hover:text-accent transition-colors">
-                    {step.label}
-                  </span>
-                  {step.critical && (
-                    <span className="pillar-badge border-warning/60 text-warning text-2xs">Critical path</span>
-                  )}
-                </div>
-                <p className="text-xs text-text-secondary font-mono leading-relaxed">
-                  {step.subtitle}
-                </p>
-                {step.duration && (
-                  <div className="flex gap-3 mt-1.5">
-                    <span className="text-2xs font-mono text-tier-land">Land <span className="text-text-secondary">{step.duration.land}</span></span>
-                    <span className="text-2xs font-mono text-tier-scale">Scale <span className="text-text-secondary">{step.duration.scale}</span></span>
-                    <span className="text-2xs font-mono text-tier-govern">Govern <span className="text-text-secondary">{step.duration.govern}</span></span>
-                  </div>
-                )}
+        <SectionHeader label="Foundation" title="Azure Well-Architected Framework (WAF)" />
+        <p className="text-sm text-text-secondary font-body leading-relaxed mb-4 max-w-2xl">
+          The WAF is Microsoft's five-pillar evaluation framework for Azure workloads. Every pattern,
+          reference architecture, and framework step in this tool is tagged against one or more pillars.
+          Pillar colors appear consistently throughout.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-border border border-border">
+          {WAF_PILLARS.map(p => (
+            <div key={p.label} className="bg-surface px-4 py-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${p.color} shrink-0`} />
+                <span className={`pillar-badge text-2xs ${p.cls}`}>{p.label}</span>
               </div>
-              <div className="flex items-center gap-1 pt-1 shrink-0">
-                {step.pillars.map(p => (
-                  <span key={p} className={`w-2 h-2 rounded-full ${PILLAR_DOT[p]}`} title={p} />
-                ))}
-              </div>
-            </Link>
+              <p className="text-xs text-text-secondary font-body leading-relaxed">{p.desc}</p>
+            </div>
           ))}
         </div>
-        <p className="mt-2 text-2xs text-text-secondary font-mono">
-          Colored dots = WAF pillars covered per step. Full opacity = primary focus · Faded = secondary.
-          Step 02 gates IaC design and all downstream steps at Tier 2+.
-        </p>
       </section>
 
       {/* Entry point cards */}

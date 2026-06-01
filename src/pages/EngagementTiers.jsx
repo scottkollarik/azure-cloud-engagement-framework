@@ -43,12 +43,15 @@ export default function EngagementTiers() {
             delay and complexity that delivers no value.
           </p>
           <p className="text-text-secondary font-body text-sm leading-relaxed">
-            The tiers calibrate how much of the framework to engage. <span className="text-text-primary">Land</span> scopes
-            down to what a single-workload deployment actually requires.{' '}
-            <span className="text-text-primary">Scale</span> adds platform engineering patterns as the estate grows.{' '}
-            <span className="text-text-primary">Govern</span> brings the full ALZ reference architecture, compliance
-            policy stacks, and formal change management. The same 7-step framework runs at all three tiers —
-            the depth and duration at each step changes.
+            The tiers calibrate how much of the framework to engage:
+          </p>
+          <ul className="mt-2 space-y-1.5 text-text-secondary font-body text-sm leading-relaxed">
+            <li><span className="text-text-primary">Land</span> scopes down to what a single-workload deployment actually requires.</li>
+            <li><span className="text-text-primary">Scale</span> adds platform engineering patterns as the estate grows.</li>
+            <li><span className="text-text-primary">Govern</span> brings the full ALZ reference architecture, compliance policy stacks, and formal change management.</li>
+          </ul>
+          <p className="text-text-secondary font-body text-sm leading-relaxed mt-2">
+            The same 7-step framework runs at all three tiers — the depth and duration at each step changes.
           </p>
         </div>
 
@@ -64,7 +67,7 @@ export default function EngagementTiers() {
               onClick={() => setActiveTab(activeTab === tier.id ? null : tier.id)}
               className={`bg-surface px-5 py-4 text-left transition-colors hover:bg-border/20 ${activeTab === tier.id ? 'bg-border/30' : ''}`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2">
                 <span className={`pillar-badge ${tc.badge} text-2xs`}>Tier {tier.number}</span>
                 <span className="text-text-secondary text-2xs font-mono">{tier.typicalDuration}</span>
               </div>
@@ -152,9 +155,9 @@ export default function EngagementTiers() {
           <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-0.5">Per-Step Breakdown</p>
           <h2 className="font-display text-base font-semibold text-text-primary">Duration by Tier — All 7 Steps</h2>
         </div>
-        <div className="border border-border overflow-hidden">
+        <div className="border border-border overflow-x-auto">
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr] bg-surface border-b border-border">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr] min-w-[480px] bg-surface border-b border-border">
             <div className="px-4 py-2.5 text-2xs font-semibold uppercase tracking-widest text-text-secondary font-display">Step</div>
             {tiersData.map(tier => (
               <div key={tier.id} className={`px-4 py-2.5 text-2xs font-semibold uppercase tracking-widest font-display ${TIER_CLASSES[tier.id].text}`}>
@@ -169,7 +172,7 @@ export default function EngagementTiers() {
             return (
               <div
                 key={step.id}
-                className={`grid grid-cols-[2fr_1fr_1fr_1fr] gap-0 border-b border-border last:border-b-0 ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'} ${hasCritical ? 'ring-inset ring-1 ring-warning/20' : ''}`}
+                className={`grid grid-cols-[2fr_1fr_1fr_1fr] min-w-[480px] gap-0 border-b border-border last:border-b-0 ${idx % 2 === 0 ? 'bg-surface' : 'bg-canvas/40'} ${hasCritical ? 'ring-inset ring-1 ring-warning/20' : ''}`}
               >
                 {/* Step label */}
                 <div className="px-4 py-3 flex items-start gap-3">
@@ -200,7 +203,7 @@ export default function EngagementTiers() {
             )
           })}
           {/* Footer totals row */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr] bg-canvas border-t border-border">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr] min-w-[480px] bg-canvas border-t border-border">
             <div className="px-4 py-3 font-display text-xs font-semibold text-text-secondary">Total engagement</div>
             {tiersData.map(tier => (
               <div key={tier.id} className="px-4 py-3">

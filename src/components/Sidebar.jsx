@@ -5,8 +5,8 @@ const NAV = [
     label: 'Framework',
     items: [
       { to: '/',                  label: 'Overview',         abbr: 'OV' },
-      { to: '/framework',         label: '7-Step Framework', abbr: 'FW' },
       { to: '/engagement-tiers',  label: 'Engagement Tiers', abbr: 'ET' },
+      { to: '/framework',         label: '7-Step Framework', abbr: 'FW' },
     ],
   },
   {
@@ -15,6 +15,7 @@ const NAV = [
       { to: '/patterns',                label: 'Patterns Library',        abbr: 'PL' },
       { to: '/reference-architectures', label: 'Reference Architectures', abbr: 'RA' },
       { to: '/ai-workloads',            label: 'AI Workloads',            abbr: 'AI' },
+      { to: '/tradeoffs',               label: 'Tradeoffs',               abbr: 'TR' },
       { to: '/troubleshooting',         label: 'Troubleshooting',         abbr: 'TS' },
       { to: '/iac',                     label: 'IaC Reference',           abbr: 'IC' },
     ],

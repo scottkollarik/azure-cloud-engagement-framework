@@ -13,6 +13,7 @@ import Adr from './pages/Adr'
 import Timeline from './pages/Timeline'
 import Troubleshooting from './pages/Troubleshooting'
 import IacReference from './pages/IacReference'
+import Tradeoffs from './pages/Tradeoffs'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="timeline" element={<Timeline />} />
           <Route path="troubleshooting" element={<Troubleshooting />} />
           <Route path="iac" element={<IacReference />} />
+          <Route path="tradeoffs" element={<Tradeoffs />} />
         </Route>
       </Routes>
     </BrowserRouter>
