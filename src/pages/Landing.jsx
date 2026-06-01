@@ -107,21 +107,6 @@ export default function Landing() {
           <em className="text-text-primary not-italic"> what is the architecturally correct way to engage with Azure
           for this workload, at this scale, under this regulatory posture?</em>
         </p>
-        <div className="flex items-center gap-4 mt-6">
-          <Link
-            to="/engagement-tiers"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-display font-semibold rounded transition-colors hover:bg-blue-500"
-          >
-            Start: Engagement Tiers
-            <ArrowRight />
-          </Link>
-          <Link
-            to="/framework"
-            className="inline-flex items-center gap-2 px-4 py-2 border border-border text-text-secondary text-sm font-display hover:text-text-primary hover:border-accent/50 rounded transition-colors"
-          >
-            View 7-Step Framework
-          </Link>
-        </div>
       </div>
 
       {/* WAF definition */}
@@ -167,7 +152,7 @@ export default function Landing() {
                 </p>
               </div>
               <span className={`text-xs font-mono flex items-center gap-1 ${ep.accent.split(' ')[1]}`}>
-                Open <ArrowRight size={12} />
+                Open →
               </span>
             </Link>
           ))}
@@ -212,11 +197,4 @@ function SectionHeader({ label, title }) {
   )
 }
 
-function ArrowRight({ size = 14 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="square" strokeLinejoin="miter" d="M5 12h14M12 5l7 7-7 7" />
-    </svg>
-  )
-}
 
