@@ -228,6 +228,27 @@ function SubStepCard({ subStep }) {
             />
           )}
 
+          {subStep.discoveryQuestions && (
+            <DataTable
+              columns={['Area', 'Questions', 'Evidence to Capture']}
+              rows={subStep.discoveryQuestions.map(r => [r.area, r.questions, r.evidence])}
+            />
+          )}
+
+          {subStep.requirementRestatement && (
+            <div>
+              <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-2">Requirement Restatement Must Include</p>
+              <ul className="space-y-1">
+                {subStep.requirementRestatement.map((item, i) => (
+                  <li key={i} className="flex gap-2 text-xs text-text-secondary">
+                    <span className="text-accent mt-0.5 shrink-0">›</span>
+                    <span className="font-body leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {subStep.commitmentTypes && (
             <DataTable
               columns={['Type', 'Discount', 'Flexibility', 'Best For']}

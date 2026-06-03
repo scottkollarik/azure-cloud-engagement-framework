@@ -7,11 +7,14 @@
     "wafPillars": { "primary": ["reliability"], "secondary": ["security"] },
     "duration": { "land": "2–4 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
+      "Unclear business objective or missing decision owner for the workload",
       "Number of regulatory frameworks in scope (HIPAA, PCI, GDPR)",
       "Data residency constraints eliminating preferred region pairs",
       "Multiple business units with conflicting SLA requirements"
     ],
     "deliverables": [
+      "Discovery question set with named business, technical, security, and operations owners",
+      "Restated requirement brief approved by the client before architecture decisions begin",
       "Quantified RTO and RPO per application tier",
       "Composite SLA calculation proving design meets availability target",
       "Approved Azure region pair with data residency justification",
@@ -24,6 +27,34 @@
     "subSteps": [
       {
         "id": "1a",
+        "title": "Client Intent and Requirement Restatement",
+        "question": "What is the client actually trying to accomplish, and can they confirm we heard it correctly?",
+        "summary": "Step 1 starts with structured discovery before any Azure service, pattern, or tier decision. The architect's first job is to ask enough questions to separate the client's desired outcome from assumed implementation details, then restate the requirement in business language for approval.",
+        "keyPoints": [
+          "Discovery questions establish the business outcome, decision owners, constraints, success measures, and non-goals",
+          "The requirement restatement prevents the architecture from solving the wrong problem with technically correct services",
+          "Do not move into RPO, RTO, SLA, or region selection until the client agrees the restatement is accurate",
+          "Capture open questions explicitly; unresolved assumptions become risks in the constraint register"
+        ],
+        "discoveryQuestions": [
+          { "area": "Business outcome", "questions": "What business capability must this workload enable? What changes if it succeeds?", "evidence": "Executive sponsor, success metric, target date" },
+          { "area": "Users and usage", "questions": "Who uses it, from where, at what volume, and during which critical windows?", "evidence": "User groups, traffic estimates, peak periods" },
+          { "area": "Current state", "questions": "What exists today, what hurts, and what must be preserved during the transition?", "evidence": "Current architecture, pain points, migration constraints" },
+          { "area": "Risk and compliance", "questions": "What regulations, audit obligations, contractual SLAs, or data handling rules apply?", "evidence": "Compliance owner, control framework, data classification" },
+          { "area": "Operations", "questions": "Who will run it after delivery, and what skills, tools, and support model do they already have?", "evidence": "Operating team, monitoring stack, incident process" },
+          { "area": "Budget and timeline", "questions": "What budget guardrails, procurement limits, and delivery deadlines constrain the design?", "evidence": "Budget owner, timeline driver, approval process" }
+        ],
+        "requirementRestatement": [
+          "Business objective in one or two sentences",
+          "In-scope workloads, users, data, integrations, and environments",
+          "Out-of-scope items and deferred decisions",
+          "Known constraints: compliance, residency, budget, timeline, skills, dependencies",
+          "Success measures: availability, recovery, performance, cost, security, operability",
+          "Open assumptions requiring client confirmation"
+        ]
+      },
+      {
+        "id": "1b",
         "title": "Recovery Point Objective (RPO)",
         "question": "How much data loss is acceptable?",
         "summary": "RPO is the maximum tolerable age of data that can be lost on failure. It is measured backwards from the failure event and is primarily a business decision driven by a Business Impact Analysis, not a technical constraint.",
@@ -42,7 +73,7 @@
         ]
       },
       {
-        "id": "1b",
+        "id": "1c",
         "title": "Recovery Time Objective (RTO)",
         "question": "How long can the system be completely offline?",
         "summary": "RTO is the maximum tolerable duration of a service outage. Measured forward from the failure event — if the system fails at 3:00 PM and RTO is 2 hours, it must be operational by 5:00 PM. Set by the business through cost-of-downtime analysis.",
@@ -61,7 +92,7 @@
         ]
       },
       {
-        "id": "1c",
+        "id": "1d",
         "title": "Composite SLA",
         "question": "Does the design mathematically meet the availability requirement?",
         "summary": "A Composite SLA is the mathematical product of all component SLAs in a serial dependency chain. It is always lower than the weakest individual component. Understanding the serial vs. parallel formula is essential — stacking two 99.99% components in series produces 99.98%, doubling annual downtime.",
@@ -79,7 +110,7 @@
         ]
       },
       {
-        "id": "1d",
+        "id": "1e",
         "title": "Data Residency",
         "question": "Where must data physically exist?",
         "summary": "Data residency is a legal mandate, not an optimization. It creates hard geographic boundaries that override architectural preferences and can force disaster recovery into a smaller region footprint than availability math would prefer.",
