@@ -76,10 +76,15 @@ export default function Sidebar({ open, onToggle }) {
           <HamburgerIcon />
         </button>
         {open && (
-          <div className="flex items-center gap-2 overflow-hidden">
-            <AzureIcon />
-            <span className="font-display font-semibold text-sm text-text-primary whitespace-nowrap tracking-tight">
-              Cloud Framework
+          <div className="flex flex-col overflow-hidden">
+            <div className="flex items-center gap-2">
+              <AzureIcon />
+              <span className="font-display font-semibold text-sm text-text-primary whitespace-nowrap tracking-tight">
+                Cloud Framework
+              </span>
+            </div>
+            <span className="text-2xs text-text-secondary/40 font-mono whitespace-nowrap pl-0.5 leading-tight">
+              powered by technologoo.io
             </span>
           </div>
         )}

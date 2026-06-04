@@ -18,6 +18,11 @@ export default function Layout() {
         <div className="bg-glow min-h-screen">
           <Outlet />
         </div>
+        <footer className="border-t border-border/40 bg-surface/60 px-6 py-3 text-center">
+          <span className="text-2xs text-text-secondary/40 font-mono">
+            © 2026 D. Scott Kollarik / Technologoo.io. All rights reserved.
+          </span>
+        </footer>
       </main>
     </div>
   )
