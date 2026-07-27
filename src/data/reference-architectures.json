@@ -335,58 +335,5 @@
         "services": ["Microsoft Defender for Cloud (CSPM + Regulatory Compliance)", "Defender for Servers (Qualys/MDE integration)", "Defender for Containers (image scan + runtime)", "Azure Policy (continuous compliance enforcement)"]
       }
     ]
-  },
-  {
-    "id": "martech-customer-data-platform",
-    "slug": "martech-customer-data-platform",
-    "title": "Marketing Data Platform (MarTech Integration)",
-    "subtitle": "Unify campaign, CRM, and web analytics data from third-party MarTech tools into one governed customer view",
-    "tiers": ["scale", "govern"],
-    "wafPrimary": "reliability",
-    "wafSecondary": ["security", "cost-optimization"],
-    "complianceRelevance": ["gdpr", "soc2"],
-    "patternIds": ["private-endpoint-strategy"],
-    "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/example-scenario/data/data-warehouse",
-    "summary": "Unifies data from scattered MarTech SaaS tools — CRM, marketing automation, ad platforms, web analytics — into one governed customer/campaign model.",
-    "whenToUse": [
-      "Campaign reporting, attribution, or segmentation depends on data siloed across 3+ MarTech platforms",
-      "Point-to-point exports/imports between tools have become unreliable or slow to change",
-      "Not worth it for a single tool with built-in reporting — the hub earns its cost at the third or fourth source"
-    ],
-    "keyDesignDecisions": [
-      "Land raw MarTech exports into a staging zone unmodified before any transformation — replaying a bad load is cheaper than re-pulling from a rate-limited SaaS API",
-      "Identity resolution (matching the same customer across CRM, ad platform, and web analytics) is deterministic-first (email/customer ID match) with probabilistic matching as an explicit, reviewed fallback — not the default",
-      "Consent and do-not-market flags are attributes on the mastered customer record, not a separate system — every activation query filters on them",
-      "PII fields are tagged and access-scoped at ingestion, not discovered later — classify before the first load, not after an audit finding",
-      "Batch (nightly/hourly) sync is the default; near-real-time (event/webhook) is reserved for use cases that specifically need it, since it roughly doubles integration complexity per source",
-      "Activation (pushing segments back to ad platforms or marketing automation) is a separate, reviewable step from analytics — reporting access does not imply write access to source tools"
-    ],
-    "layers": [
-      {
-        "name": "Ingestion",
-        "role": "Land data from CRM, marketing automation, ad platforms, and web/app analytics tools into a raw staging zone",
-        "services": ["Azure Data Factory (SaaS connectors)", "Azure Event Hubs (webhook / clickstream ingestion)", "Azure Data Lake Storage (raw landing zone)", "Azure Key Vault (source API credentials)"]
-      },
-      {
-        "name": "Conform & Master",
-        "role": "Cleanse, deduplicate, and resolve identity across sources into one customer and campaign model",
-        "services": ["Azure Synapse Analytics or Microsoft Fabric", "Azure Databricks (identity resolution)", "Azure SQL Database (mastered profile store)"]
-      },
-      {
-        "name": "Governance & Consent",
-        "role": "Classify PII, enforce consent and retention rules before data is queryable or activated",
-        "services": ["Microsoft Purview (data catalog + classification)", "Azure Policy (retention, tagging)", "Private Endpoints (all data services)"]
-      },
-      {
-        "name": "Analytics & Reporting",
-        "role": "Self-service campaign performance and customer-value reporting for marketing and business stakeholders",
-        "services": ["Power BI", "Azure Analysis Services (semantic model)", "Azure Synapse Serverless SQL (ad hoc query)"]
-      },
-      {
-        "name": "Activation",
-        "role": "Push reviewed segments and audiences back out to MarTech tools for targeting",
-        "services": ["Azure Functions (activation API)", "Azure Logic Apps (SaaS connectors)", "Azure Service Bus (event-driven activation)"]
-      }
-    ]
   }
 ]
