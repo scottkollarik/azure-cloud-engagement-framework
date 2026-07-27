@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import steps from '../data/framework-steps.json'
 import pillars from '../data/waf-pillars.json'
+import { useProject } from '../context/useProject'
 
 const PILLAR_META = Object.fromEntries(pillars.map(p => [p.id, p]))
 
@@ -10,6 +11,21 @@ const TIER_COLOR = {
   land:   'text-tier-land   border-tier-land/40',
   scale:  'text-tier-scale  border-tier-scale/40',
   govern: 'text-tier-govern border-tier-govern/40',
+}
+
+const MATURITY_GUIDANCE = {
+  prototype: {
+    label: 'Prototype',
+    text: 'Prove feasibility with clear assumptions, constrained scope, and honest limits.',
+  },
+  pilot: {
+    label: 'Pilot',
+    text: 'Validate with representative users or data, basic monitoring, rollback, and ownership.',
+  },
+  production: {
+    label: 'Production',
+    text: 'Require security, observability, support model, cost controls, and operational handoff.',
+  },
 }
 
 function PillarDot({ id, size = 'sm' }) {
@@ -406,9 +422,153 @@ function ChevronIcon({ open }) {
   )
 }
 
+function EngagementBrief({ brief, onChange }) {
+  const [open, setOpen] = useState(false)
+  const hasBrief = Object.values(brief).some(Boolean)
+
+  const fields = [
+    ['clientName', 'Client / org'],
+    ['outcome', 'Outcome'],
+    ['constraints', 'Constraints'],
+  ]
+
+  return (
+    <div className="card mb-4">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-border/20 transition-colors"
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display">Engagement Brief</p>
+          <p className="text-xs text-text-secondary font-body mt-1 truncate">
+            {hasBrief
+              ? [brief.clientName, brief.outcome].filter(Boolean).join(' · ')
+              : 'Optional local context for framing the 7-step flow.'}
+          </p>
+        </div>
+        <ChevronIcon open={open} />
+      </button>
+
+      {open && (
+        <div className="border-t border-border px-4 py-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          {fields.map(([key, label]) => (
+            <label key={key}>
+              <span className="block text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-1">{label}</span>
+              <textarea
+                value={brief[key]}
+                onChange={e => onChange({ [key]: e.target.value })}
+                rows={2}
+                className="w-full bg-canvas border border-border text-text-primary font-mono text-xs px-3 py-2 focus:border-accent focus:outline-none resize-y placeholder:text-text-secondary/50"
+                placeholder="Capture only what helps steer the engagement."
+              />
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EngagementReadiness({ maturity, onMaturityChange, notes, onNotesChange }) {
+  const [open, setOpen] = useState(false)
+  const active = MATURITY_GUIDANCE[maturity] ?? MATURITY_GUIDANCE.prototype
+  const noteFields = [
+    ['assumptions', 'Assumptions'],
+    ['risks', 'Risks'],
+    ['decisions', 'Decisions'],
+  ]
+
+  return (
+    <div className="card px-4 py-3 mb-8">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="flex-1 min-w-0">
+          <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-1">Engagement Lens</p>
+          <p className="text-xs text-text-secondary font-body leading-relaxed">{active.text}</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {Object.entries(MATURITY_GUIDANCE).map(([id, item]) => (
+            <button
+              key={id}
+              onClick={() => onMaturityChange(id)}
+              className={`px-3 py-1 text-xs font-display border transition-colors ${
+                maturity === id
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-border text-text-secondary hover:text-text-primary hover:border-accent/50'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
+            onClick={() => setOpen(o => !o)}
+            className="px-3 py-1 text-xs font-display border border-border text-text-secondary hover:text-text-primary hover:border-accent/50 transition-colors"
+          >
+            Notes
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="border-t border-border mt-3 pt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+          {noteFields.map(([key, label]) => (
+            <label key={key}>
+              <span className="block text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-1">{label}</span>
+              <textarea
+                value={notes[key]}
+                onChange={e => onNotesChange({ [key]: e.target.value })}
+                rows={4}
+                className="w-full bg-canvas border border-border text-text-primary font-mono text-xs px-3 py-2 focus:border-accent focus:outline-none resize-y placeholder:text-text-secondary/50"
+                placeholder="Keep this short and evidence-based."
+              />
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ClientLens({ lens }) {
+  if (!lens) return null
+  return (
+    <div className="border border-border bg-canvas/50 px-4 py-3">
+      <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-3">Client Lens</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div>
+          <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary/70 font-display mb-1">Goal</p>
+          <p className="text-xs text-text-secondary font-body leading-relaxed">{lens.goal}</p>
+        </div>
+        <div>
+          <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary/70 font-display mb-1">Architect Questions</p>
+          <ul className="space-y-1">
+            {lens.questions.map((q, i) => (
+              <li key={i} className="flex gap-2 text-xs text-text-secondary">
+                <span className="text-accent shrink-0">›</span>
+                <span className="font-body leading-relaxed">{q}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary/70 font-display mb-1">Done When</p>
+          <p className="text-xs text-text-secondary font-body leading-relaxed">{lens.doneWhen}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Framework() {
   const [searchParams] = useSearchParams()
   const [activeStep, setActiveStep] = useState(() => searchParams.get('open') || null)
+  const {
+    maturity,
+    setMaturity,
+    engagementBrief,
+    setEngagementBrief,
+    engagementNotes,
+    setEngagementNotes,
+  } = useProject()
 
   useEffect(() => {
     const openParam = searchParams.get('open')
@@ -417,7 +577,7 @@ export default function Framework() {
       const el = document.getElementById(openParam)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 100)
-  }, [])
+  }, [searchParams])
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-12">
@@ -429,6 +589,14 @@ export default function Framework() {
           Step 02 is the critical path — it must complete before IaC design begins at Tier 2+.
         </p>
       </div>
+
+      <EngagementBrief brief={engagementBrief} onChange={setEngagementBrief} />
+      <EngagementReadiness
+        maturity={maturity}
+        onMaturityChange={setMaturity}
+        notes={engagementNotes}
+        onNotesChange={setEngagementNotes}
+      />
 
       {/* WAF pillar legend */}
       <div className="card px-4 py-3 mb-8">
@@ -522,6 +690,8 @@ export default function Framework() {
               {/* Expanded content */}
               {isActive && (
                 <div className="border-t border-border px-5 pb-6 pt-5 space-y-6">
+
+                  <ClientLens lens={step.engagementLens} />
 
                   {/* Duration + metadata row */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

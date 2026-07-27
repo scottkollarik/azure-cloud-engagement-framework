@@ -4,6 +4,16 @@
     "number": "01",
     "title": "Deconstruct Constraints and Targets",
     "subtitle": "Extract the non-negotiable business rules before selecting any Azure service.",
+    "engagementLens": {
+      "goal": "Turn vague business needs into measurable constraints before any service choices are made.",
+      "questions": [
+        "What outcome is the client trying to protect or improve?",
+        "Which targets are fixed by contract, regulation, or leadership?",
+        "Which cost ceilings, tier limits, or shared services constrain the design?",
+        "What assumptions still need evidence?"
+      ],
+      "doneWhen": "RTO, RPO, residency, availability, cost constraints, and key assumptions are explicit enough to constrain the design."
+    },
     "wafPillars": { "primary": ["reliability"], "secondary": ["security"] },
     "duration": { "land": "2–4 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
@@ -18,6 +28,7 @@
       "Quantified RTO and RPO per application tier",
       "Composite SLA calculation proving design meets availability target",
       "Approved Azure region pair with data residency justification",
+      "Cost constraints and approved service tier boundaries",
       "Constraint register (inputs to all downstream steps)"
     ],
     "stakeholders": ["Solutions architect", "Business unit lead", "Compliance officer", "CTO / CIO"],
@@ -135,6 +146,16 @@
     "number": "02",
     "title": "Establish the Identity, Security, and Observability Boundary",
     "subtitle": "Define who owns what and how access is controlled before designing compute or network.",
+    "engagementLens": {
+      "goal": "Define the guardrails, ownership model, and visibility baseline that every workload must inherit.",
+      "questions": [
+        "Who owns identity, network, security operations, and platform governance?",
+        "Which controls are advisory, audited, or enforced?",
+        "What tagging, budget, and policy guardrails must exist at subscription creation?",
+        "What logs and alerts must exist before production traffic?"
+      ],
+      "doneWhen": "Administrative boundaries, access controls, policy guardrails, cost attribution, and central logging are agreed before workload design proceeds."
+    },
     "wafPillars": { "primary": ["security"], "secondary": ["operational-excellence", "reliability"] },
     "duration": { "land": "3–5 days", "scale": "2–4 weeks", "govern": "4–8 weeks" },
     "complexityDrivers": [
@@ -295,6 +316,16 @@
     "number": "03",
     "title": "Map the Data Flow and Storage Tiers",
     "subtitle": "Data architecture dictates network and compute design — not the other way around.",
+    "engagementLens": {
+      "goal": "Make data shape, movement, ownership, and retention visible before compute and network choices harden.",
+      "questions": [
+        "What data is created, transformed, stored, and consumed?",
+        "Which data is sensitive, regulated, or expensive to move?",
+        "Which lifecycle and retention rules must be deployed with storage?",
+        "Where should compute live relative to the data?"
+      ],
+      "doneWhen": "Data flows, classifications, replication needs, lifecycle policies, and storage tiers are mapped to business and compliance constraints."
+    },
     "wafPillars": { "primary": ["reliability"], "secondary": ["security", "performance-efficiency", "cost-optimization"] },
     "duration": { "land": "2–4 days", "scale": "1–2 weeks", "govern": "2–4 weeks" },
     "complexityDrivers": [
@@ -388,6 +419,16 @@
     "number": "04",
     "title": "Design the Network Routing and Compute Abstraction",
     "subtitle": "Connect users to compute with the right traffic routing and scaling model.",
+    "engagementLens": {
+      "goal": "Select the runtime and traffic path that fit user experience, operations, and failure behavior.",
+      "questions": [
+        "Where does user and system traffic enter the solution?",
+        "What parts of the workload are stateless, stateful, bursty, or steady?",
+        "Which components can scale to zero or downshift in non-production?",
+        "What scaling behavior must be proven before launch?"
+      ],
+      "doneWhen": "Routing, compute platform, scaling policy, and connectivity choices are justified against the workload profile."
+    },
     "wafPillars": { "primary": ["performance-efficiency"], "secondary": ["security", "reliability", "cost-optimization"] },
     "duration": { "land": "2–4 days", "scale": "1–2 weeks", "govern": "2–3 weeks" },
     "complexityDrivers": [
@@ -482,6 +523,15 @@
     "number": "05",
     "title": "Conduct a Blast Radius Failure Analysis",
     "subtitle": "Stress-test the design on paper by simulating total failures of individual components.",
+    "engagementLens": {
+      "goal": "Expose where the architecture actually fails and what recovery requires before implementation hides those gaps.",
+      "questions": [
+        "What breaks if each major dependency disappears or slows down?",
+        "Which recoveries are automatic, manual, or untested?",
+        "Who acts when a failure crosses team boundaries?"
+      ],
+      "doneWhen": "Failure scenarios, SPOFs, recovery actions, and validation gaps are documented with owners."
+    },
     "wafPillars": { "primary": ["reliability"], "secondary": ["security", "operational-excellence"] },
     "duration": { "land": "2–3 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
@@ -559,8 +609,19 @@
   {
     "id": "step-6",
     "number": "06",
-    "title": "Apply FinOps Optimizations",
-    "subtitle": "Refine the final architecture for cost efficiency without sacrificing reliability or security.",
+    "title": "Establish FinOps Guardrails and Optimization Plan",
+    "subtitle": "Put cost controls in place before deployment, then plan optimization from real utilization data.",
+    "engagementLens": {
+      "goal": "Make cost an architecture constraint, not a cleanup task after resources are deployed.",
+      "questions": [
+        "What cost drivers scale with users, data, transactions, or idle time?",
+        "Which paid tiers are justified by a requirement?",
+        "Which cost controls must be deployed before the first workload goes live?",
+        "Which optimizations require 30-60 days of representative utilization data?",
+        "Who receives budget alerts and owns optimization decisions?"
+      ],
+      "doneWhen": "Cost drivers, tier choices, budgets, tags, pre-deployment controls, and post-deployment optimization checkpoints are visible to technical and business owners."
+    },
     "wafPillars": { "primary": ["cost-optimization"], "secondary": ["security", "operational-excellence"] },
     "duration": { "land": "2–3 days", "scale": "3–5 days", "govern": "1–2 weeks" },
     "complexityDrivers": [
@@ -569,12 +630,13 @@
       "FinOps maturity of the organization"
     ],
     "deliverables": [
-      "Right-sizing recommendation per compute resource",
-      "Reserved Instance / Savings Plan commitment recommendation",
-      "Storage lifecycle policy applied to all blob containers",
+      "Pre-deployment cost guardrails: approved tiers, budgets, tags, and lifecycle policies",
+      "Initial right-sizing assumptions per compute resource",
+      "Reserved Instance / Savings Plan review plan based on 30-60 days of utilization",
+      "Storage lifecycle policy designed for all blob containers",
       "Azure Cost Management budget + alert configuration",
       "Cost allocation tag taxonomy enforced via Policy",
-      "FinOps maturity assessment"
+      "FinOps maturity assessment and optimization review cadence"
     ],
     "stakeholders": ["Solutions architect", "Finance / FinOps lead", "Platform engineering", "Business unit lead"],
     "gates": [],
@@ -585,7 +647,7 @@
         "id": "6a",
         "title": "Right-Size Compute Resources",
         "question": "Are resources sized for actual utilization, not theoretical peak?",
-        "summary": "Over-provisioning is the most common Azure cost waste. Collect 30 days of utilization data before making sizing decisions. Target 60–70% average CPU, not 10–20%.",
+        "summary": "Over-provisioning is the most common Azure cost waste. Use conservative initial sizing before deployment, then collect 30-60 days of utilization data before making commitment decisions such as Reserved Instances or Savings Plans. Target 60–70% average CPU, not 10–20%.",
         "commitmentTypes": [
           { "type": "Pay-as-you-go",          "discount": "0%",       "flexibility": "Maximum",  "bestFor": "Dev/test, highly variable load" },
           { "type": "Azure Savings Plan (1-yr)", "discount": "Up to 11%", "flexibility": "High",  "bestFor": "Predictable but flexible workloads" },
@@ -599,10 +661,10 @@
         "id": "6b",
         "title": "Storage Lifecycle Management",
         "question": "Is data automatically transitioned to cheaper tiers as it ages?",
-        "summary": "Application logs, diagnostic data, and backup exports accumulate silently in Hot tier. A lifecycle policy that moves data to Cool at 30 days and Archive at 90 days can reduce storage costs by 80–95% for inactive data.",
+        "summary": "Application logs, diagnostic data, and backup exports accumulate silently in Hot tier. Lifecycle policy is a deployment-time guardrail, not a cleanup task. Moving data to Cool at 30 days and Archive at 90 days can reduce storage costs by 80–95% for inactive data.",
         "keyPoints": [
           "1 TB at Hot tier: ~$20/month. Same at Archive tier: ~$1/month — 95% reduction with a Lifecycle policy",
-          "Apply lifecycle policies to all storage accounts at deployment time, not retrospectively",
+          "Define lifecycle policies before deployment for storage accounts that will accumulate logs, backups, or archival data",
           "Archive rehydration takes hours — document which data may need emergency retrieval"
         ]
       },
@@ -649,6 +711,15 @@
     "number": "07",
     "title": "Establish the Operational Model",
     "subtitle": "Define how the architecture is deployed, changed, monitored, and recovered — by people, not just tools.",
+    "engagementLens": {
+      "goal": "Confirm the client can safely run, change, and recover the solution after the design is handed off.",
+      "questions": [
+        "Which team owns deployment, monitoring, incidents, and improvements?",
+        "How are changes reviewed, promoted, and rolled back?",
+        "What evidence proves runbooks and alerts work?"
+      ],
+      "doneWhen": "Ownership, deployment flow, runbooks, incident process, and post-launch responsibilities are explicit."
+    },
     "wafPillars": { "primary": ["operational-excellence"], "secondary": ["reliability", "security"] },
     "duration": { "land": "3–5 days", "scale": "1–2 weeks", "govern": "3–5 weeks" },
     "complexityDrivers": [

@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useProject } from '../context/ProjectContext'
+import { useProject } from '../context/useProject'
 import { downloadProjectFile, readProjectFile } from '../utils/projectFile'
 
-const TOOL_PATHS = new Set(['/calculator', '/adr', '/timeline'])
+const TOOL_PATHS = new Set(['/framework', '/calculator', '/adr', '/timeline'])
 
 export default function ProjectBar() {
   const { projectName, setProjectName, getProjectData, loadProject, hasUnsavedWork } = useProject()
@@ -80,7 +80,7 @@ export default function ProjectBar() {
           } disabled:opacity-30 disabled:cursor-not-allowed`}
         >
           <SaveIcon />
-          {saved ? 'Saved ✓' : 'Save'}
+          {saved ? 'Exported ✓' : 'Export'}
         </button>
         <input
           ref={fileInputRef}

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useProject } from '../context/ProjectContext'
+import { useProject } from '../context/useProject'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ const FRAMEWORK_STEPS = [
   { value: '3', label: '03 — Map the Data Flow and Storage Tiers' },
   { value: '4', label: '04 — Design the Network Routing and Compute Abstraction' },
   { value: '5', label: '05 — Conduct a Blast Radius Failure Analysis' },
-  { value: '6', label: '06 — Apply FinOps Optimizations' },
+  { value: '6', label: '06 — Establish FinOps Guardrails and Optimization Plan' },
   { value: '7', label: '07 — Establish the Operational Model' },
 ]
 
@@ -480,7 +480,7 @@ export default function Adr() {
         </div>
         {adrs.length === 0 ? (
           <p className="px-4 py-3 text-xs font-mono text-text-secondary">
-            No ADRs saved to this project yet. Complete the form below and click "Save to Project".
+            No ADRs saved to this project yet. Complete the form below and click &quot;Save to Project&quot;.
           </p>
         ) : (
           <div className="divide-y divide-border">

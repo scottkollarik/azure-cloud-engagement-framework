@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom'
 import tiersData from '../data/engagement-tiers.json'
 import stepsData from '../data/framework-steps.json'
 
-const STEP_TITLES = Object.fromEntries(stepsData.map(s => [s.id, { number: s.number, title: s.title }]))
-
 const TIER_CLASSES = {
   land:   { text: 'text-tier-land',   border: 'border-tier-land',   bg: 'bg-tier-land',   badge: 'border-tier-land text-tier-land' },
   scale:  { text: 'text-tier-scale',  border: 'border-tier-scale',  bg: 'bg-tier-scale',  badge: 'border-tier-scale text-tier-scale' },

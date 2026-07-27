@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useProject } from '../context/ProjectContext'
+import { useProject } from '../context/useProject'
 
 // ─── Pricing catalog ──────────────────────────────────────────────────────────
 

@@ -34,7 +34,7 @@
       { "stepId": "step-3", "duration": "2–4 days",  "notes": "Data classification workshop plus customer validation time; documented replication strategy and lifecycle policy take longer than the discovery" },
       { "stepId": "step-4", "duration": "2–4 days",  "notes": "Compute selection, VNet topology, autoscale configuration — design documentation and review cycles add time even at this tier" },
       { "stepId": "step-5", "duration": "2–3 days",  "notes": "Proper failure matrix requires enumerating components, running failure scenarios, identifying SPOFs, and documenting remediation — not a half-day exercise" },
-      { "stepId": "step-6", "duration": "2–3 days",  "notes": "Right-sizing needs a 30-day utilization baseline; RI analysis, tagging policy, and budget configuration each take meaningful time" },
+      { "stepId": "step-6", "duration": "2–3 days",  "notes": "Pre-deployment guardrails include approved tiers, lifecycle policies, tagging policy, and budgets; RI and Savings Plan decisions wait for 30-60 days of utilization data" },
       { "stepId": "step-7", "duration": "3–5 days",  "notes": "IaC repo structure, CI/CD pipeline with proper gates, deployment safety pattern selection, and minimum runbook library — more than two days of work" }
     ]
   },
@@ -76,7 +76,7 @@
       { "stepId": "step-3", "duration": "1–2 weeks",  "notes": "Multiple data stores with different replication requirements; data gravity analysis requires cross-team input and documentation review" },
       { "stepId": "step-4", "duration": "1–2 weeks",  "notes": "Virtual WAN or hub-spoke decision, multi-team network alignment, ExpressRoute lead time planning (4–8 weeks carrier provisioning starts here)" },
       { "stepId": "step-5", "duration": "3–5 days",   "notes": "Larger failure domain surface; on-premises dependency chain adds complexity — thorough failure matrix and remediation planning is a full week of work" },
-      { "stepId": "step-6", "duration": "3–5 days",   "notes": "Reserved Instance decisions across multiple subscriptions, multi-team tagging audit, FinOps maturity baseline — Finance stakeholder alignment takes time" },
+      { "stepId": "step-6", "duration": "3–5 days",   "notes": "Multi-team tagging, budgets, lifecycle policies, and cost ownership are set before go-live; commitment purchases require post-launch utilization evidence and Finance alignment" },
       { "stepId": "step-7", "duration": "1–2 weeks",  "notes": "Multi-team GitOps, environment promotion gates, change management process — integration friction across teams is unavoidable" }
     ]
   },
@@ -119,7 +119,7 @@
       { "stepId": "step-3", "duration": "2–4 weeks",  "notes": "Data sovereignty across regions, zero-RPO requirements, cross-region replication compliance — legal and compliance review extends every data architecture decision" },
       { "stepId": "step-4", "duration": "2–3 weeks",  "notes": "Multi-region active-active or active-passive decision, ExpressRoute + VPN coexistence design, per-region compute strategy — ExpressRoute carrier provisioning (4–8 weeks) starts in parallel" },
       { "stepId": "step-5", "duration": "1–2 weeks",  "notes": "Full failure matrix for regulated incident scenarios, POA&M for identified gaps, compliance evidence packaging — documentation alone takes days" },
-      { "stepId": "step-6", "duration": "1–2 weeks",  "notes": "FinOps maturity assessment, chargeback implementation, 3-year RI strategy — Finance and procurement stakeholder alignment adds calendar time" },
+      { "stepId": "step-6", "duration": "1–2 weeks",  "notes": "FinOps maturity assessment, chargeback implementation, cost policy guardrails, and a 3-year commitment review plan — Finance and procurement alignment adds calendar time" },
       { "stepId": "step-7", "duration": "3–5 weeks",  "notes": "CAB integration, ATO documentation package, ConMon program standup, enterprise runbook library — regulatory documentation alone is weeks of work" }
     ]
   }

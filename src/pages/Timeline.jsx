@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useProject } from '../context/ProjectContext'
+import { useProject } from '../context/useProject'
 import steps from '../data/framework-steps.json'
 import tiers from '../data/engagement-tiers.json'
 import overlays from '../data/compliance-overlays.json'
