@@ -149,14 +149,19 @@ function ArchDetail({ arch }) {
     <div className="border-t border-border bg-canvas/60 px-5 pb-6 pt-5 space-y-6">
 
       {/* When to use */}
-      {arch.whenToUse && (
+      {arch.whenToUse?.length > 0 && (
         <div>
           <p className="text-2xs font-semibold tracking-widest uppercase text-text-secondary font-display mb-2">
             When to Use
           </p>
-          <p className="text-sm text-text-secondary font-body leading-relaxed">
-            {arch.whenToUse}
-          </p>
+          <ul className="space-y-1.5">
+            {arch.whenToUse.map((point, i) => (
+              <li key={i} className="flex gap-2 text-sm">
+                <span className="text-accent shrink-0">›</span>
+                <span className="text-text-secondary font-body leading-relaxed">{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

@@ -10,8 +10,11 @@
     "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high", "nist-800-53"],
     "patternIds": ["hub-spoke-network", "azure-virtual-wan"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/",
-    "summary": "The Azure Landing Zone reference implementation establishes a policy-driven governance foundation for enterprise Azure estates. A management group hierarchy scopes compliance policy initiatives across all subscriptions, and subscription vending automates workload onboarding for product teams. Platform, Identity, and Connectivity subscriptions are separated from workload landing zones.",
-    "whenToUse": "Required for Govern-tier engagements with multiple product teams, regulated workloads, or a dedicated cloud platform team. Do not apply ALZ complexity to a Land-tier single-workload deployment — the governance overhead outweighs the benefit at that scale.",
+    "summary": "A policy-driven governance foundation: management group hierarchy, compliance policy, and automated subscription vending for enterprise Azure estates.",
+    "whenToUse": [
+      "Govern-tier engagements with multiple product teams, regulated workloads, or a dedicated cloud platform team",
+      "Not for a Land-tier single-workload deployment — the governance overhead outweighs the benefit at that scale"
+    ],
     "keyDesignDecisions": [
       "Management group depth: Platform / Landing Zones / Sandboxes / Decommissioned is the ALZ canonical hierarchy",
       "Policy initiative assignment at management group scope enforces compliance without per-subscription configuration",
@@ -58,8 +61,12 @@
     "complianceRelevance": ["pci-dss"],
     "patternIds": ["hub-spoke-network", "private-endpoints"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/n-tier",
-    "summary": "A classic layered architecture adapted for Azure PaaS: web tier (App Service or Container Apps) handles HTTP traffic behind Application Gateway, business logic tier processes requests, and a managed data tier (Azure SQL, Redis) persists state. Each tier scales independently and is isolated by NSG or Private Endpoints. Availability Zones spread each tier for intra-region redundancy.",
-    "whenToUse": "Well-understood workloads with clear tier separation — web applications, internal portals, APIs with database backends. Use when the team understands the deployment model and wants predictable operational behavior. Move toward microservices/AKS when the number of independently deployable business capabilities exceeds what a monolith can cleanly support.",
+    "summary": "A classic layered Azure PaaS architecture — web, business logic, and data tiers scale independently behind Application Gateway, isolated by NSG or Private Endpoints.",
+    "whenToUse": [
+      "Well-understood workloads with clear tier separation: web apps, internal portals, APIs with a database backend",
+      "The team wants predictable operational behavior over deployment flexibility",
+      "Move toward microservices/AKS once independently deployable capabilities exceed what a monolith can cleanly support"
+    ],
     "keyDesignDecisions": [
       "App Service Environments vs. multi-tenant App Service: use ASE only if network injection is required for compliance",
       "Azure SQL Geo-Replication or Auto-Failover Group for RPO/RTO targets below 1 hour",
@@ -111,8 +118,12 @@
     "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high"],
     "patternIds": ["hub-spoke-network", "private-endpoints", "containers-aks"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices",
-    "summary": "A private AKS cluster hosts independently deployable microservices managed by a platform team. Workload Identity replaces pod-level secrets. Node pools are sized and tainted per workload class (system, user, GPU). KEDA and the Cluster Autoscaler handle demand scaling. GitOps via Flux or Argo CD enforces desired state. Azure Container Registry stores and scans images before deployment.",
-    "whenToUse": "When the number of independently deployable services exceeds what a monolith can cleanly support, when teams need independent release cadences, or when container density economics justify the platform investment. Do not introduce AKS complexity for a single-team application that deploys monthly — App Service is operationally simpler.",
+    "summary": "A private AKS cluster running independently deployable microservices, with Workload Identity, per-workload-class node pools, KEDA autoscaling, and GitOps-managed desired state.",
+    "whenToUse": [
+      "Service count exceeds what a monolith can cleanly support, or teams need independent release cadences",
+      "Container density economics justify the platform investment",
+      "Skip it for a single-team app that deploys monthly — App Service is operationally simpler"
+    ],
     "keyDesignDecisions": [
       "Private cluster: API server accessible only from within the VNet or via approved CIDR ranges",
       "Workload Identity (OIDC + federated credentials) replaces pod-mounted secrets — no credential rotation required",
@@ -165,8 +176,11 @@
     "complianceRelevance": [],
     "patternIds": ["event-driven-messaging"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven",
-    "summary": "Azure Functions respond to triggers from Event Grid, Service Bus, or Blob Storage, processing events at scale with no infrastructure management. Durable Functions handle long-running orchestration with checkpoint state in Azure Storage. Event Grid fans out domain events to multiple downstream consumers. The architecture scales to zero — costs are proportional to actual invocations, not provisioned capacity.",
-    "whenToUse": "Spiky or unpredictable workloads where scale-to-zero economics matter: file processing, webhook handlers, integration pipelines, and async background work. Not suitable for sub-10ms latency requirements (cold start) or stateful streaming workloads where Azure Stream Analytics or Event Hubs with Kafka protocol is more appropriate.",
+    "summary": "Azure Functions process events from Event Grid, Service Bus, or Blob Storage with no infrastructure management — scales to zero, cost tracks actual invocations.",
+    "whenToUse": [
+      "Spiky or unpredictable workloads where scale-to-zero economics matter: file processing, webhooks, integration pipelines, async work",
+      "Not suitable for sub-10ms latency needs (cold start) or stateful streaming — use Event Hubs or Stream Analytics instead"
+    ],
     "keyDesignDecisions": [
       "Consumption Plan for true scale-to-zero economics; Premium Plan required if VNet injection or warm instances are needed",
       "Durable Functions for workflows with checkpoints, fan-out/fan-in, or human approval steps — avoid long-running logic in standard functions",
@@ -218,8 +232,12 @@
     "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high"],
     "patternIds": ["multi-region-dr"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/high-availability/traffic-manager-application-gateway",
-    "summary": "The primary region handles all production traffic. The secondary region is warm-standby: the application is deployed and healthy, data is replicated asynchronously, and traffic failover is automated via Azure Traffic Manager or Azure Front Door. On primary-region failure, Traffic Manager detects the unhealthy endpoint and routes traffic to the secondary within minutes. RTO targets of 15–60 minutes are achievable; sub-15-minute RTO requires active-active.",
-    "whenToUse": "Workloads with an RTO target between 15 minutes and 4 hours that cannot justify the cost of active-active. Regulated workloads often require documented DR capability with tested failover. Active-passive is the right trade-off when writes are infrequent enough that async replication lag (RPO 1–15 minutes) is acceptable.",
+    "summary": "Primary region serves all traffic; a warm-standby secondary replicates data asynchronously and takes over automatically via Traffic Manager or Front Door on failure. RTO targets of 15–60 minutes are achievable.",
+    "whenToUse": [
+      "RTO target between 15 minutes and 4 hours, without the cost of active-active",
+      "Regulated workloads that need documented, tested DR failover",
+      "Writes are infrequent enough that async replication lag (RPO 1–15 min) is acceptable"
+    ],
     "keyDesignDecisions": [
       "Azure Front Door is preferred over Traffic Manager for HTTP workloads — sub-minute failover vs. 30-second DNS TTL minimum",
       "Azure SQL Auto-Failover Group replicates data asynchronously — measure replication lag under production write load before committing to RPO target",
@@ -271,8 +289,12 @@
     "complianceRelevance": ["pci-dss", "hipaa", "fedramp-high", "nist-800-53"],
     "patternIds": ["hub-spoke-network", "private-endpoints", "azure-virtual-wan"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/aks/pci-intro",
-    "summary": "Regulated workloads require layered controls that satisfy auditor requirements: a defined cardholder data environment (CDE) or PHI boundary, network segmentation enforced by Azure Firewall and NSGs, comprehensive audit logging shipped to a SIEM, encryption at rest and in transit, and a documented access control model. The architecture scope is intentionally kept minimal — only services that must touch regulated data are in-scope.",
-    "whenToUse": "Any workload processing, storing, or transmitting cardholder data (PCI-DSS), protected health information (HIPAA), or federal data (FedRAMP). Engage a QSA (PCI) or compliance officer early — architectural decisions made before their review often require expensive redesign. The compliance overlay in this framework's Timeline page includes the additional weeks these reviews add.",
+    "summary": "Layered controls for regulated data: a minimal CDE/PHI boundary, Azure Firewall-enforced network segmentation, SIEM audit logging, and encryption everywhere.",
+    "whenToUse": [
+      "Any workload processing, storing, or transmitting cardholder data (PCI-DSS), PHI (HIPAA), or federal data (FedRAMP)",
+      "Engage a QSA or compliance officer early — decisions made before their review often require expensive redesign",
+      "See the Timeline page's compliance overlay for the extra weeks these reviews add"
+    ],
     "keyDesignDecisions": [
       "Scope minimization: the smallest possible CDE / PHI boundary is the correct boundary — every additional service adds compliance surface area",
       "All traffic in/out of the regulated boundary transits Azure Firewall — no peering that bypasses the firewall",
@@ -325,8 +347,12 @@
     "complianceRelevance": ["gdpr", "soc2"],
     "patternIds": ["private-endpoint-strategy"],
     "architectureCenterUrl": "https://learn.microsoft.com/en-us/azure/architecture/example-scenario/data/data-warehouse",
-    "summary": "Marketing organizations typically run 5-15 SaaS MarTech tools — marketing automation, CRM, ad platforms, web/app analytics, a CDP — each with its own schema and no shared identity model. This architecture lands data from those tools on a schedule or via webhook, conforms it into one customer/campaign model, applies consent and retention rules, and exposes it for reporting and for pushing segments back out to the same tools (activation). It replaces point-to-point integrations between MarTech tools with a single governed hub.",
-    "whenToUse": "A marketing org's campaign reporting, attribution, or audience segmentation depends on data siloed across three or more MarTech platforms, and point-to-point exports/imports between tools have become unreliable or slow to change. Not worth the overhead for a single marketing automation tool with built-in reporting — the integration hub earns its cost once a third or fourth source system joins.",
+    "summary": "Unifies data from scattered MarTech SaaS tools — CRM, marketing automation, ad platforms, web analytics — into one governed customer/campaign model.",
+    "whenToUse": [
+      "Campaign reporting, attribution, or segmentation depends on data siloed across 3+ MarTech platforms",
+      "Point-to-point exports/imports between tools have become unreliable or slow to change",
+      "Not worth it for a single tool with built-in reporting — the hub earns its cost at the third or fourth source"
+    ],
     "keyDesignDecisions": [
       "Land raw MarTech exports into a staging zone unmodified before any transformation — replaying a bad load is cheaper than re-pulling from a rate-limited SaaS API",
       "Identity resolution (matching the same customer across CRM, ad platform, and web analytics) is deterministic-first (email/customer ID match) with probabilistic matching as an explicit, reviewed fallback — not the default",
