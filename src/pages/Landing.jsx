@@ -155,7 +155,7 @@ export default function Landing() {
       <section className="mb-16">
         <SectionHeader label="Foundation" title="Azure Well-Architected Framework (WAF)" />
         <p className="text-sm text-text-secondary font-body leading-relaxed mb-4 max-w-2xl">
-          The WAF is Microsoft's five-pillar evaluation framework for Azure workloads. Every pattern,
+          The WAF is Microsoft&apos;s five-pillar evaluation framework for Azure workloads. Every pattern,
           reference architecture, and framework step in this tool is tagged against one or more pillars.
           Pillar colors appear consistently throughout.
         </p>
@@ -238,5 +238,4 @@ function SectionHeader({ label, title }) {
     </div>
   )
 }
-
 
